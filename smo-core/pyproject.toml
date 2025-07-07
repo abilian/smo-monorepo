@@ -1,5 +1,5 @@
 [project]
-name = "h3ni-smo-core"
+name = "smo-core"
 version = "0.1.0"
 description = "Core library for the Synergetic Meta-Orchestrator, containing business logic and utilities."
 readme = "README.md"
@@ -27,4 +27,5 @@ dev = [
     "coverage>=7.9.2",
     "devtools>=0.12.2",
     "pytest-mock>=3.14.1",
+    "hatchling",
 ]
