@@ -3,7 +3,6 @@ import pytest
 from smo_core.models.cluster import Cluster
 from smo_core.models.hdag.graph import Graph
 from smo_core.models.hdag.service import Service
-from smo_core.services import cluster_service
 from smo_core.services.hdag import graph_service
 
 # A sample graph descriptor for testing

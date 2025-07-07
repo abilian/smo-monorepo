@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from smo_core.utils.placement import (

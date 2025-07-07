@@ -1,6 +1,5 @@
 """Cluster table model."""
 
-from sqlalchemy import Boolean, Float, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from smo_core.database import Base

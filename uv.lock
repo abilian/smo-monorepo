@@ -865,6 +865,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "abilian-devtools" },
+    { name = "devtools" },
     { name = "hatchling" },
     { name = "pydoclint", extra = ["flake8"] },
     { name = "pytest-mock" },
@@ -882,6 +883,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "abilian-devtools", specifier = ">=0.7" },
+    { name = "devtools", specifier = ">=0.12.2" },
     { name = "hatchling", specifier = ">=1.27.0" },
     { name = "pydoclint", extras = ["flake8"], specifier = ">=0.5.9" },
     { name = "pytest-mock", specifier = ">=3.14.1" },

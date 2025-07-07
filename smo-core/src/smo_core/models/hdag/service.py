@@ -2,8 +2,7 @@
 
 from typing import Optional
 
-from sqlalchemy import ForeignKey
-from sqlalchemy import String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.orm.attributes import Mapped

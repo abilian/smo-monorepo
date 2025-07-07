@@ -28,6 +28,7 @@ dev-dependencies = [
     "hatchling>=1.27.0",
     "pytest-mock>=3.14.1",
     "snoop>=0.6.0",
+    "devtools>=0.12.2",
 ]
 
 [tool.uv.workspace]

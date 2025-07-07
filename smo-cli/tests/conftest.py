@@ -3,7 +3,6 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-import yaml
 from click.testing import CliRunner
 
 from smo_cli.cli import main
