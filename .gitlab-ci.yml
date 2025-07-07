@@ -1,0 +1,19 @@
+default:
+  tags:
+    - origin:eclipse
+
+smo:
+  stage: build
+  image: python:3.12
+
+  script:
+    - export PATH=/builds/.local/bin:$PATH
+    - pip install uv
+    - uv sync
+    - uv run make
+    # - uv run make lint
+    # Smoke test for Flask app (still needs to be fixed)
+    # - cd src
+    # - uv run python app.py &> flask.log &
+    # - sleep 7
+    # - cat flask.log
