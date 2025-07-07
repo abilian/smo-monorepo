@@ -11,7 +11,7 @@ from smo_core.utils.karmada_helper import KarmadaHelper
 from smo_core.utils.prometheus_helper import PrometheusHelper
 
 from .config import get_config
-from .database import SessionLocal
+from .database import get_session_factory
 
 console = Console()
 
@@ -25,8 +25,6 @@ class CliContext:
 
     cli_config: dict
 
-    _db_session_factory: Callable = SessionLocal
-
     # Lazy-loaded helpers
     _karmada_helper: KarmadaHelper = None
     _prometheus_helper: PrometheusHelper = None
@@ -35,7 +33,8 @@ class CliContext:
 
     def db_session(self):
         """Provides a new database session."""
-        return self._db_session_factory()
+        session_factory = get_session_factory()
+        return session_factory()
 
     @property
     def karmada(self) -> KarmadaHelper:

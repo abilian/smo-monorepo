@@ -17,11 +17,17 @@ def mock_smo_env(tmp_path: Path, monkeypatch) -> Path:
     smo_path.mkdir()
 
     # Use monkeypatch to redirect the config/db constants to our temp directory
-    monkeypatch.setattr("smo_cli.core.config.SMO_DIR", str(smo_path))
+    monkeypatch.setattr(
+        "smo_cli.core.config.SMO_DIR",
+        str(smo_path),
+    )
     monkeypatch.setattr(
         "smo_cli.core.config.CONFIG_FILE", str(smo_path / "config.yaml")
     )
-    monkeypatch.setattr("smo_cli.core.database.DB_FILE", str(smo_path / "smo.db"))
+    monkeypatch.setattr(
+        "smo_cli.core.database.DB_FILE",
+        str(smo_path / "smo.db"),
+    )
 
     # Create a dummy config file
     config_path = str(smo_path / "config.yaml")

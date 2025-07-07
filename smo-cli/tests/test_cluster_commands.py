@@ -35,7 +35,7 @@ def test_cluster_sync(runner, mock_smo_env: Path, mock_cluster_service):
     mock_cluster_service.fetch_clusters.assert_called_once()
 
 
-@pytest.mark.skip("Not yet implemented properly")
+# @pytest.mark.skip("Not yet implemented properly")
 def test_cluster_list_no_db(runner, mock_smo_env: Path, mocker):
     """Tests 'smo-cli cluster list' when the DB doesn't exist yet."""
     # We patch the db_session to simulate an error, e.g., db not initialized

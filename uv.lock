@@ -260,6 +260,15 @@ wheels = [
 ]
 
 [[package]]
+name = "cheap-repr"
+version = "0.5.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/30/f0e9d5bfe80b8287ea8a9263eb3c71c5fdf44b6f7a781a7c96f83172ccad/cheap_repr-0.5.2.tar.gz", hash = "sha256:001a5cf8adb0305c7ad3152c5f776040ac2a559d97f85770cebcb28c6ca5a30f", size = 20232, upload-time = "2024-08-10T14:08:07.314Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/52/fec0262af470a157a557e46be1d52ecdaf1695cefd80bb62bb6a07cc4ea9/cheap_repr-0.5.2-py2.py3-none-any.whl", hash = "sha256:537ec1991bfee885c13c6d473afd110a408e039cde26882e95bf92761556ab6e", size = 12228, upload-time = "2024-08-10T14:08:05.965Z" },
+]
+
+[[package]]
 name = "clarabel"
 version = "0.11.1"
 source = { registry = "https://pypi.org/simple" }
@@ -860,6 +869,7 @@ dev = [
     { name = "pydoclint", extra = ["flake8"] },
     { name = "pytest-mock" },
     { name = "reuse" },
+    { name = "snoop" },
     { name = "ty" },
 ]
 
@@ -876,6 +886,7 @@ dev = [
     { name = "pydoclint", extras = ["flake8"], specifier = ">=0.5.9" },
     { name = "pytest-mock", specifier = ">=3.14.1" },
     { name = "reuse", specifier = ">=5.0" },
+    { name = "snoop", specifier = ">=0.6.0" },
     { name = "ty", specifier = ">=0.0.0a7" },
 ]
 
@@ -1811,6 +1822,21 @@ source = { editable = "smo-web-connexion" }
 name = "smo-web-flask"
 version = "0.1.0"
 source = { editable = "smo-web-flask" }
+
+[[package]]
+name = "snoop"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asttokens" },
+    { name = "cheap-repr" },
+    { name = "executing" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/67/70/8479d19ec0441279e773521928ad7cad91901c1a3eaf1fc3a0eb92e3cf6e/snoop-0.6.0.tar.gz", hash = "sha256:c615eddf84d8907f893dec7fde38768aa4b1d88d92d63055b6cfc07e5cde37ec", size = 95968, upload-time = "2024-10-06T20:31:03.935Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a5/93/84a16940c44f6ec62cf334f25aed3128a514dffc361397eee09421a1c7f2/snoop-0.6.0-py3-none-any.whl", hash = "sha256:f5ea9060e65594bf404e6841086b4a964cc27bc30569109c91a470f948b0f729", size = 27461, upload-time = "2024-10-06T20:31:02.199Z" },
+]
 
 [[package]]
 name = "sqlalchemy"

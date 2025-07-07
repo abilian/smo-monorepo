@@ -12,8 +12,9 @@ DEFAULT_CONFIG = {
     "karmada_kubeconfig": str(Path.home() / ".kube" / "karmada-apiserver.config"),
     "grafana": {
         "host": "http://localhost:3000",
+        # Default Grafana login credentials (for testing purposes only!)
         "username": "admin",
-        "password": "prom-operator",
+        "password": "admin",
     },
     "prometheus_host": "http://localhost:9090",
     "helm": {
