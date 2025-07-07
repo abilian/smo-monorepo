@@ -29,9 +29,7 @@ def deploy(ctx: CliContext, descriptor: str, project: str):
     )
     try:
         if descriptor.startswith("oci://"):
-            graph_data = graph_service.get_descriptor_from_artifact(
-                ctx.core_context, project, descriptor
-            )
+            graph_data = graph_service.get_graph_from_artifact(descriptor)
         else:
             with open(descriptor, "r") as f:
                 graph_data = yaml.safe_load(f)

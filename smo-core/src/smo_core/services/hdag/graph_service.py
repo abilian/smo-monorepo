@@ -303,7 +303,7 @@ def deploy_conditional_service(context, db_session, data):
             db_session.commit()
 
 
-def get_descriptor_from_artifact(context, project, artifact_ref):
+def get_graph_from_artifact(artifact_ref):
     with tempfile.TemporaryDirectory() as dirpath:
         print(f"Pulling artifact {artifact_ref}...")
         result = run_hdarctl("pull", artifact_ref, "--untar", "--destination", dirpath)
@@ -314,6 +314,7 @@ def get_descriptor_from_artifact(context, project, artifact_ref):
                 if file.endswith((".yaml", ".yml")):
                     with open(path.join(root, file), "r") as yaml_file:
                         return yaml.safe_load(yaml_file)
+
     raise FileNotFoundError("No YAML descriptor found in artifact.")
 
 

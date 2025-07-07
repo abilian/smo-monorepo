@@ -1,7 +1,6 @@
 import os
 
 import click
-from devtools import debug
 from rich.console import Console
 
 from smo_cli.core.config import Config
@@ -27,8 +26,6 @@ def _init():
     smo_dir = config.smo_dir
     config_file = config.path
     db_file = config.db_file
-
-    debug(smo_dir, config_file, db_file)
 
     console.print(f"Initializing SMO-CLI environment in [cyan]{smo_dir}[/]...")
     if not os.path.exists(smo_dir):
