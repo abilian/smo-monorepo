@@ -8,3 +8,9 @@ when called by the consumer application.
 from .cluster import Cluster
 from .hdag.graph import Graph
 from .hdag.service import Service
+
+__all__ = [
+    "Cluster",
+    "Graph",
+    "Service",
+]

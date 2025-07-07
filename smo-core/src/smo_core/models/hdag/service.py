@@ -1,6 +1,8 @@
 """Application graph service node model."""
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -11,6 +13,10 @@ from sqlalchemy.types import JSON
 from ..base import Base
 
 JsonType = JSON().with_variant(JSONB, "postgresql")
+
+if TYPE_CHECKING:
+    # Avoid circular import
+    from .graph import Graph
 
 
 class Service(Base):
@@ -35,7 +41,7 @@ class Service(Base):
 
     # Foreign Key and Relationship
     graph_id: Mapped[int] = mapped_column(ForeignKey("graph.id"))
-    graph: Mapped["Graph"] = relationship(back_populates="services")
+    graph: Mapped[Graph] = relationship(back_populates="services")
 
     def to_dict(self):
         """Returns a dictionary representation of the class."""

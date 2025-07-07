@@ -24,8 +24,7 @@ class GrafanaHelper:
 
         url = f"{self.grafana_host}/api/dashboards/db"
         res = requests.post(url, json=dashboard_json, auth=self.auth)
-        if res.status_code != 200:
-            raise BadRequest(res.json())
+        res.raise_for_status()
         return res.json()
 
     def create_cluster_dashboard(self, cluster_name):

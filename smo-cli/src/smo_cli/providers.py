@@ -31,7 +31,7 @@ class ConfigProvider(Provider):
             # The init command must be run before any other command.
             return Config.load()
         except FileNotFoundError as e:
-            print(f"ERROR: Configuration not found. Please run `smo-cli init` first.")
+            print("ERROR: Configuration not found. Please run `smo-cli init` first.")
             raise e
 
 

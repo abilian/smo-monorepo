@@ -1,5 +1,6 @@
 test:
-	pytest
+	pytest smo-core
+	pytest smo-cli
 
 .PHONY: test
 
