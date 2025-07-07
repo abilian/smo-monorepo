@@ -13,6 +13,7 @@ dependencies = [
     # "hop3-agent",
     "smo-core",
     "smo-cli",
+    "invoke>=2.2.0",
 ]
 
 # ------------------------------------

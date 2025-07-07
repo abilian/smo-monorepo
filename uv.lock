@@ -867,6 +867,7 @@ name = "h3ni-smo"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "invoke" },
     { name = "smo-cli" },
     { name = "smo-core" },
 ]
@@ -885,6 +886,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "invoke", specifier = ">=2.2.0" },
     { name = "smo-cli", editable = "smo-cli" },
     { name = "smo-core", editable = "smo-core" },
 ]
