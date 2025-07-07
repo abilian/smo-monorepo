@@ -52,7 +52,7 @@ def deploy_graph(context, db_session, project, graph_descriptor):
         grafana=None,
     )
     db_session.add(graph)
-    db_session.commit()
+    db_session.flush()
 
     services = graph_descriptor["services"]
     cpu_limits = [
@@ -117,13 +117,6 @@ def deploy_graph(context, db_session, project, graph_descriptor):
         else:
             gpu = 0
 
-        # gpu = (
-        #     1
-        #     if service_data["deployment"]["intent"]["compute"]["gpu"]["enabled"]
-        #     == "True"
-        #     else 0
-        # )
-
         if not graph_descriptor.get("hdaGraphIntent", {}).get(
             "useStaticPlacement", False
         ):
@@ -141,7 +134,7 @@ def deploy_graph(context, db_session, project, graph_descriptor):
         grafana_url = f"{context.config['grafana']['host']}{response['url']}"
 
         cluster_affinity = service_placement.get(svc_name)
-        svc = Service(
+        service = Service(
             name=svc_name,
             values_overwrite=values_overwrite,
             graph_id=graph.id,
@@ -157,7 +150,7 @@ def deploy_graph(context, db_session, project, graph_descriptor):
             grafana=grafana_url,
             alert=alert,
         )
-        db_session.add(svc)
+        db_session.add(service)
 
         if not conditional_deployment:
             helm_install_artifact(

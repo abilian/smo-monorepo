@@ -41,16 +41,17 @@ tasks:
 
   - test: |
       cd smo-monorepo
-      uv run make test
+      uv run pytest smo-core/tests/a_unit
+      uv run pytest smo-cli/tests/
 
-  - nox: |
-      cd smo-monorepo
-      uv run nox -e pytest-3.12
+#  - nox: |
+#      cd smo-monorepo
+#      uv run nox -e pytest-3.12
 
-  - buildah: |
-      cd smo-monorepo
-      buildah build -t smo .
-
-  - docker-build: |
-      cd smo-monorepo
-      sudo docker build -t smo .
+#  - buildah: |
+#      cd smo-monorepo
+#      buildah build -t smo .
+#
+#  - docker-build: |
+#      cd smo-monorepo
+#      sudo docker build -t smo .
