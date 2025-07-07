@@ -2,7 +2,7 @@
 
 from sqlalchemy import Boolean, Column, Float, Integer, String
 
-from ..database import Base
+from smo_core.database import Base
 
 
 class Cluster(Base):

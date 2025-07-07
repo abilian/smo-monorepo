@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import JSON
 
-from ...database import Base
+from smo_core.database import Base
 
 JsonType = JSON().with_variant(JSONB, "postgresql")
 

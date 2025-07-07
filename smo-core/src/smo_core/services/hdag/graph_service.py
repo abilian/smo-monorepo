@@ -1,6 +1,5 @@
 """Application graph deployment business logic."""
 
-import subprocess
 import tempfile
 from os import path, walk
 
