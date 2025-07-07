@@ -1,0 +1,30 @@
+[project]
+name = "h3ni-smo-core"
+version = "0.1.0"
+description = "Core library for the Synergetic Meta-Orchestrator, containing business logic and utilities."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "SQLAlchemy>=2.0",
+    "kubernetes>=28.0",
+    "requests>=2.28",
+    "PyYAML>=6.0",
+    "cvxpy[highs]>=1.3",
+    "scipy",
+    "numpy",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/smo_core"]
+
+[dependency-groups]
+dev = [
+    "abilian-devtools>=0.7.7",
+    "coverage>=7.9.2",
+    "devtools>=0.12.2",
+    "pytest-mock>=3.14.1",
+]
