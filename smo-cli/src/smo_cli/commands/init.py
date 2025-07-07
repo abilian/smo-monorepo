@@ -11,11 +11,21 @@ from smo_cli.core.database import DbManager
 @click.command()
 def init():
     """Initializes the SMO-CLI environment in ~/.smo/"""
+    _init()
+
+
+def _init():
     console = Console()
 
-    config = Config.load()
+    try:
+        config = Config.load()
+    except FileNotFoundError:
+        console.print("[blue]Creating default configuration...[/blue]")
+        Config.create_default_config()
+        config = Config.load()
+
     smo_dir = config.smo_dir
-    config_file = config.config_file
+    config_file = config.path
     db_file = config.db_file
 
     debug(smo_dir, config_file, db_file)

@@ -16,7 +16,7 @@ def test_init_command(runner: CliRunner, tmp_path: Path) -> None:
     result = runner.invoke(main, ["init"])
 
     assert result.exit_code == 0
-    assert "Created default configuration file" in result.output
+    assert "Creating default configuration" in result.output
     assert "Ensured local database is created" in result.output
     assert (smo_dir / "config.yaml").exists()
-    # assert (smo_dir / "smo.db").exists()
+    assert (smo_dir / "smo.db").exists()

@@ -26,7 +26,7 @@ class DbManager:
         Returns the SQLAlchemy engine for the CLI's SQLite database.
         This is used to create sessions and interact with the database.
         """
-        db_file = self.cli_config.get_db_file()
+        db_file = self.cli_config.db_file
         db_uri = f"sqlite:///{db_file}"
         return create_engine(db_uri, connect_args={"check_same_thread": False})
 
