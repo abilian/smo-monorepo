@@ -28,11 +28,7 @@ def deploy(ctx: CliContext, descriptor: str, project: str):
         f"Deploying graph from [cyan]'{descriptor}'[/cyan] into project [magenta]'{project}'[/magenta]..."
     )
     try:
-        if descriptor.startswith("oci://"):
-            graph_data = graph_service.get_graph_from_artifact(descriptor)
-        else:
-            with open(descriptor, "r") as f:
-                graph_data = yaml.safe_load(f)
+        graph_data = get_graph_data(descriptor)
 
         if not graph_data or "hdaGraph" not in graph_data:
             console.print(
@@ -51,6 +47,15 @@ def deploy(ctx: CliContext, descriptor: str, project: str):
         console.print("Use 'smo-cli graph list' to check status.")
     except Exception as e:
         console.print(f"[bold red]Error during deployment:[/] {e}")
+
+
+def get_graph_data(descriptor):
+    if descriptor.startswith("oci://"):
+        return graph_service.get_graph_from_artifact(descriptor)
+
+    with open(descriptor, "r") as f:
+        graph_data = yaml.safe_load(f)
+        return graph_data
 
 
 @graph.command(name="list")

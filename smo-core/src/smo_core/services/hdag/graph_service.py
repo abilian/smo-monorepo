@@ -4,7 +4,6 @@ import tempfile
 from os import path, walk
 
 import yaml
-from devtools import debug
 
 from smo_core.models import Cluster, Graph, Service
 from smo_core.utils import run_hdarctl, run_helm
@@ -38,8 +37,6 @@ def deploy_graph(context, db_session, project, graph_descriptor):
     Instantiates an application graph by using Helm to
     deploy each service's artifact.
     """
-    debug(graph_descriptor)
-
     grafana_helper = context.grafana
     prom_helper = context.prometheus
 
@@ -115,12 +112,17 @@ def deploy_graph(context, db_session, project, graph_descriptor):
         storage = translate_storage(
             service_data["deployment"]["intent"]["compute"]["storage"]
         )
-        gpu = (
-            1
-            if service_data["deployment"]["intent"]["compute"]["gpu"]["enabled"]
-            == "True"
-            else 0
-        )
+        if service_data["deployment"]["intent"]["compute"]["gpu"]["enabled"] == "True":
+            gpu = 1
+        else:
+            gpu = 0
+
+        # gpu = (
+        #     1
+        #     if service_data["deployment"]["intent"]["compute"]["gpu"]["enabled"]
+        #     == "True"
+        #     else 0
+        # )
 
         if not graph_descriptor.get("hdaGraphIntent", {}).get(
             "useStaticPlacement", False

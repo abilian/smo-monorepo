@@ -24,11 +24,14 @@ packages:
   # Docker and friends
   - buildah
   - docker-buildx
+  # Dependencies for helm
+  - snapd
 
 tasks:
   - setup: |
       # Install python pre-requisites
       sudo pip install --break-system-packages -U uv nox
+      sudo snap install --classic helm
       cd smo-monorepo
       uv sync
 
