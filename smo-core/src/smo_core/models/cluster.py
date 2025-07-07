@@ -1,6 +1,7 @@
 """Cluster table model."""
 
-from sqlalchemy import Boolean, Column, Float, Integer, String
+from sqlalchemy import Boolean, Float, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from smo_core.database import Base
 
@@ -8,14 +9,14 @@ from smo_core.database import Base
 class Cluster(Base):
     __tablename__ = "cluster"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False, unique=True)
-    location = Column(String(100))
-    available_cpu = Column(Float, nullable=False)
-    available_ram = Column(String, nullable=False)
-    availability = Column(Boolean, nullable=False)
-    acceleration = Column(Boolean, nullable=False)
-    grafana = Column(String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    location: Mapped[str] = mapped_column(nullable=True)
+    available_cpu: Mapped[float] = mapped_column()
+    available_ram: Mapped[str] = mapped_column()
+    availability: Mapped[bool] = mapped_column()
+    acceleration: Mapped[bool] = mapped_column()
+    grafana: Mapped[str] = mapped_column(nullable=True)
 
     def to_dict(self):
         """Returns a dictionary representation of the class."""

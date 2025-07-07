@@ -1,8 +1,12 @@
 """Application graph service node model."""
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from typing import Optional
+
+from sqlalchemy import ForeignKey
+from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import mapped_column, relationship
+from sqlalchemy.orm.attributes import Mapped
 from sqlalchemy.types import JSON
 
 from smo_core.database import Base
@@ -13,23 +17,26 @@ JsonType = JSON().with_variant(JSONB, "postgresql")
 class Service(Base):
     __tablename__ = "service"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True, nullable=False)
-    status = Column(String(255))
-    grafana = Column(String(255))
-    cluster_affinity = Column(String(255))
-    artifact_ref = Column(String(255))
-    artifact_type = Column(String(255))
-    artifact_implementer = Column(String(255))
-    cpu = Column(String(255))
-    memory = Column(String(255))
-    storage = Column(String(255))
-    gpu = Column(String(255))
-    values_overwrite = Column(JsonType)
-    alert = Column(JsonType)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True)
+    status: Mapped[Optional[str]] = mapped_column(String(255))
+    grafana: Mapped[Optional[str]] = mapped_column(String(255))
+    cluster_affinity: Mapped[Optional[str]] = mapped_column(String(255))
+    artifact_ref: Mapped[Optional[str]] = mapped_column(String(255))
+    artifact_type: Mapped[Optional[str]] = mapped_column(String(255))
+    artifact_implementer: Mapped[Optional[str]] = mapped_column(String(255))
+    cpu: Mapped[Optional[str]] = mapped_column(String(255))
+    memory: Mapped[Optional[str]] = mapped_column(String(255))
+    storage: Mapped[Optional[str]] = mapped_column(String(255))
+    gpu: Mapped[Optional[str]] = mapped_column(String(255))
 
-    graph_id = Column(Integer, ForeignKey("graph.id"), nullable=False)
-    graph = relationship("Graph", back_populates="services")
+    # For JSON columns, you can type hint with Dict, List, or Any
+    values_overwrite: Mapped[Optional[JsonType]] = mapped_column(JsonType)
+    alert: Mapped[Optional[JsonType]] = mapped_column(JsonType)
+
+    # Foreign Key and Relationship
+    graph_id: Mapped[int] = mapped_column(ForeignKey("graph.id"))
+    graph: Mapped["Graph"] = relationship(back_populates="services")
 
     def to_dict(self):
         """Returns a dictionary representation of the class."""
