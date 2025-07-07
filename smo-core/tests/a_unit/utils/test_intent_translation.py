@@ -38,7 +38,7 @@ def test_translate_storage():
         ("large", 8),
     ],
 )
-def test_translate_cpu(input_val, expected):
+def test_translate_cpu2(input_val, expected):
     assert translate_cpu(input_val) == expected
 
 
@@ -51,7 +51,7 @@ def test_translate_cpu(input_val, expected):
         ("large", "8GiB"),
     ],
 )
-def test_translate_memory(input_val, expected):
+def test_translate_memory2(input_val, expected):
     assert translate_memory(input_val) == expected
 
 
@@ -63,7 +63,7 @@ def test_translate_memory(input_val, expected):
         ("large", "40GB"),
     ],
 )
-def test_translate_storage(input_val, expected):
+def test_translate_storage2(input_val, expected):
     assert translate_storage(input_val) == expected
 
 

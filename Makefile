@@ -1,8 +1,17 @@
+all: lint test
+
 test:
 	pytest smo-core
 	pytest smo-cli
 
 .PHONY: test
+
+
+lint:
+	ruff check
+
+.PHONY: test
+
 
 format:
 	cd smo-core && isort .
@@ -10,6 +19,7 @@ format:
 	ruff format
 
 .PHONY: format
+
 
 ## Sync code with remote repositories
 sync-code:
