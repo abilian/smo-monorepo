@@ -1,9 +1,24 @@
+import os
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
 import yaml
 from click.testing import CliRunner
+
+from smo_cli.cli import main
+
+
+@pytest.fixture(scope="function")
+def tmp_smo_dir(tmp_path: Path, runner: CliRunner) -> Path:
+    """
+    Creates a temporary directory for ~/.smo, which is used by the tests.
+    This ensures that tests do not interfere with the user's actual SMO configuration.
+    """
+    smo_dir = tmp_path / ".smo"
+    os.environ["SMO_DIR"] = str(smo_dir)
+    assert runner.invoke(main, ["init"]).exit_code == 0
+    return smo_dir
 
 
 @pytest.fixture(scope="function")
@@ -58,12 +73,6 @@ def runner():
 def mock_graph_service(mocker):
     """Mocks the entire graph_service module from smo_core."""
     return mocker.patch("smo_cli.commands.graph.graph_service")
-
-
-@pytest.fixture
-def mock_cluster_service(mocker):
-    """Mocks the entire cluster_service module from smo_core."""
-    return mocker.patch("smo_cli.commands.cluster.cluster_service")
 
 
 @pytest.fixture

@@ -5,11 +5,9 @@ import pytest
 from smo_cli.cli import main
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_graph_deploy_from_file(
-    runner, mock_smo_env: Path, mock_graph_service, hdag_file
-):
+def test_graph_deploy_from_file(runner, tmp_path: Path, mock_graph_service, hdag_file):
     """Tests 'smo-cli graph deploy' with a local file."""
+
     result = runner.invoke(
         main, ["graph", "deploy", "--project", "test-proj", hdag_file]
     )
