@@ -1,0 +1,48 @@
+# Copyright (c) 2023-2024, Abilian SAS
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+image: rockylinux/latest
+
+packages:
+  # Python
+  - python3.11
+  - python3.11-pip
+  - python3.11-devel
+  - python3.12
+  - python3.12-pip
+  - python3.12-devel
+  # Build tools
+  - make
+  - gcc
+  # - npm
+  # Libraries
+  - libpq-devel
+  # Docker and friends (NB: docker is not available on Rocky Linux)
+  - buildah
+  # Dependencies for buildah
+  - passt-selinux
+
+
+tasks:
+  - setup: |
+      # Install python pre-requisites
+      sudo pip3.12 install -U uv nox
+      cd smo-monorepo
+      uv sync
+
+  - lint: |
+      cd smo-monorepo
+      uv run make lint
+
+  - test: |
+      cd smo-monorepo
+      uv run make test
+
+  - nox: |
+      cd smo-h3ni
+      uv run nox -e pytest-3.12
+
+#  - buildah: |
+#      cd smo-monorepo
+#      buildah build -t smo .
