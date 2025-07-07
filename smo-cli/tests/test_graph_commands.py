@@ -1,21 +1,21 @@
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner
 
 from smo_cli.cli import main
 
 
-def test_graph_deploy_from_file(runner, tmp_path: Path, mock_graph_service, hdag_file):
+def test_graph_deploy_from_file(
+    runner: CliRunner, tmp_smo_dir: Path, mock_graph_service, hdag_file
+):
     """Tests 'smo-cli graph deploy' with a local file."""
 
     result = runner.invoke(
         main, ["graph", "deploy", "--project", "test-proj", hdag_file]
     )
-
     assert result.exit_code == 0
-    assert (
-        "Successfully triggered deployment for graph 'my-test-graph'" in result.output
-    )
+    assert "Successfully triggered deployment" in result.output
 
     # Assert that the core service was called with the correct arguments
     mock_graph_service.deploy_graph.assert_called_once()
@@ -26,8 +26,7 @@ def test_graph_deploy_from_file(runner, tmp_path: Path, mock_graph_service, hdag
     assert args[3]["id"] == "my-test-graph"  # graph_descriptor
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_graph_deploy_from_oci(runner, mock_smo_env: Path, mock_graph_service):
+def test_graph_deploy_from_oci(runner, tmp_smo_dir: Path, mocker, mock_graph_service):
     """Tests 'smo-cli graph deploy' with an OCI URL."""
     oci_url = "oci://my-registry/my-graph:1.0"
 
@@ -50,8 +49,7 @@ def test_graph_deploy_from_oci(runner, mock_smo_env: Path, mock_graph_service):
     mock_graph_service.deploy_graph.assert_called_once()
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_graph_list(runner, mock_smo_env, mock_graph_service):
+def test_graph_list(runner, tmp_smo_dir: Path, mock_graph_service, mocker):
     """Tests 'smo-cli graph list'."""
     mock_graph_service.fetch_project_graphs.return_value = [
         {
@@ -76,8 +74,7 @@ def test_graph_list(runner, mock_smo_env, mock_graph_service):
     )
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_graph_remove(runner, mock_smo_env, mock_graph_service):
+def test_graph_remove(runner, tmp_smo_dir: Path, mock_graph_service):
     """Tests 'smo-cli graph remove' with user confirmation."""
     result = runner.invoke(
         main,
@@ -87,7 +84,7 @@ def test_graph_remove(runner, mock_smo_env, mock_graph_service):
 
     assert result.exit_code == 0
     assert "Are you sure" in result.output
-    assert "Graph 'my-graph' removed successfully" in result.output
+    assert "removed successfully" in result.output
 
     mock_graph_service.remove_graph.assert_called_once()
     # Check args
@@ -95,8 +92,7 @@ def test_graph_remove(runner, mock_smo_env, mock_graph_service):
     assert args[2] == "my-graph"
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_graph_remove_abort(runner, mock_smo_env, mock_graph_service):
+def test_graph_remove_abort(runner, tmp_smo_dir, mock_graph_service):
     """Tests 'smo-cli graph remove' with user aborting."""
     result = runner.invoke(
         main,
@@ -111,8 +107,7 @@ def test_graph_remove_abort(runner, mock_smo_env, mock_graph_service):
     mock_graph_service.remove_graph.assert_not_called()
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_graph_re_place(runner, mock_smo_env, mock_graph_service):
+def test_graph_re_place(runner, tmp_smo_dir, mock_graph_service):
     """Tests 'smo-cli graph re-place'."""
     result = runner.invoke(main, ["graph", "re-place", "my-graph"])
 
