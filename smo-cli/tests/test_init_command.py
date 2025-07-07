@@ -12,8 +12,6 @@ def test_init_command(runner: CliRunner, tmp_path: Path) -> None:
     directory, config file, and database file.
     """
     smo_dir = tmp_path / ".smo"
-    smo_dir.mkdir()
-
     os.environ["SMO_DIR"] = str(smo_dir)
     result = runner.invoke(main, ["init"])
 

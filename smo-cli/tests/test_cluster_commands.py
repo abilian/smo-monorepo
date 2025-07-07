@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -5,9 +6,13 @@ import pytest
 from smo_cli.cli import main
 
 
-@pytest.mark.skip("Not yet implemented properly")
-def test_cluster_sync(runner, mock_smo_env: Path, mock_cluster_service):
+def test_cluster_sync(runner, tmp_path: Path, mock_cluster_service):
     """Tests 'smo-cli cluster sync'."""
+
+    smo_dir = tmp_path / ".smo"
+    os.environ["SMO_DIR"] = str(smo_dir)
+    assert runner.invoke(main, ["init"]).exit_code == 0
+
     # Configure the mock to return some data
     mock_cluster_service.fetch_clusters.return_value = [
         {
@@ -36,8 +41,13 @@ def test_cluster_sync(runner, mock_smo_env: Path, mock_cluster_service):
 
 
 # @pytest.mark.skip("Not yet implemented properly")
-def test_cluster_list_no_db(runner, mock_smo_env: Path, mocker):
+def test_cluster_list_no_db(runner, tmp_path: Path, mocker):
     """Tests 'smo-cli cluster list' when the DB doesn't exist yet."""
+
+    smo_dir = tmp_path / ".smo"
+    os.environ["SMO_DIR"] = str(smo_dir)
+    assert runner.invoke(main, ["init"]).exit_code == 0
+
     # We patch the db_session to simulate an error, e.g., db not initialized
     mocker.patch(
         "smo_cli.core.context.CliContext.db_session",
@@ -46,4 +56,4 @@ def test_cluster_list_no_db(runner, mock_smo_env: Path, mocker):
 
     result = runner.invoke(main, ["cluster", "list"])
     # The main error handler should catch this
-    assert "An unexpected error occurred" in result.output
+    assert "DB file not found" in result.output
