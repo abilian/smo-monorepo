@@ -1,4 +1,4 @@
-from smo_core.utils.helpers import format_memory
+from smo_core.utils import format_memory
 
 
 def test_format_memory():

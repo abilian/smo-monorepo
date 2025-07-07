@@ -49,7 +49,7 @@ def test_calculate_naive_placement_insufficient_capacity():
         )
 
 
-@pytest.mark.skip("Needs to be reviews")
+@pytest.mark.skip("Needs to be reviewed")
 def test_decide_placement_basic():
     """Test the CVXPY-based placement algorithm."""
     cluster_capacities = [4, 4]

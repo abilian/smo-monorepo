@@ -2,10 +2,31 @@
 import pytest
 
 from smo_core.utils.intent_translation import (
-    tranlsate_cpu,
-    tranlsate_memory,
-    tranlsate_storage,
+    translate_cpu,
+    translate_memory,
+    translate_storage,
 )
+
+
+def test_translate_cpu():
+    """Test CPU translation."""
+
+    assert translate_cpu("light") == 0.5
+    assert translate_cpu("medium") == 4
+
+
+def test_translate_memory():
+    """Test memory translation."""
+
+    assert translate_memory("small") == "1GiB"
+    assert translate_memory("large") == "8GiB"
+
+
+def test_translate_storage():
+    """Test storage translation."""
+
+    assert translate_storage("small") == "10GB"
+    assert translate_storage("medium") == "20GB"
 
 
 @pytest.mark.parametrize(
@@ -18,7 +39,7 @@ from smo_core.utils.intent_translation import (
     ],
 )
 def test_translate_cpu(input_val, expected):
-    assert tranlsate_cpu(input_val) == expected
+    assert translate_cpu(input_val) == expected
 
 
 @pytest.mark.parametrize(
@@ -31,7 +52,7 @@ def test_translate_cpu(input_val, expected):
     ],
 )
 def test_translate_memory(input_val, expected):
-    assert tranlsate_memory(input_val) == expected
+    assert translate_memory(input_val) == expected
 
 
 @pytest.mark.parametrize(
@@ -43,9 +64,9 @@ def test_translate_memory(input_val, expected):
     ],
 )
 def test_translate_storage(input_val, expected):
-    assert tranlsate_storage(input_val) == expected
+    assert translate_storage(input_val) == expected
 
 
 def test_translate_cpu_invalid():
     with pytest.raises(KeyError):
-        tranlsate_cpu("extra_large")
+        translate_cpu("extra_large")

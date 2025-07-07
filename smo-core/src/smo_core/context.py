@@ -7,9 +7,9 @@ making the service layer independent of the calling application (web vs. cli).
 
 from dataclasses import dataclass
 
-from .utils.grafana_helper import GrafanaHelper
-from .utils.karmada_helper import KarmadaHelper
-from .utils.prometheus_helper import PrometheusHelper
+from .helpers import GrafanaHelper
+from .helpers import KarmadaHelper
+from .helpers import PrometheusHelper
 
 
 @dataclass

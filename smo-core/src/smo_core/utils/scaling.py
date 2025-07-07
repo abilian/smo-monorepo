@@ -5,8 +5,8 @@ import time
 import cvxpy as cp
 import requests
 
-from smo_core.utils.karmada_helper import KarmadaHelper
-from smo_core.utils.prometheus_helper import PrometheusHelper
+from smo_core.helpers import KarmadaHelper
+from smo_core.helpers import PrometheusHelper
 
 
 def scaling_loop(

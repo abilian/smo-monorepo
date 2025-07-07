@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from smo_core.context import SmoContext
 from smo_core.models.base import Base
-from smo_core.utils.helpers import format_memory
+from smo_core.utils import format_memory
 
 # Hack for MacOS
 os.environ["PATH"] = "/opt/homebrew/bin:" + os.environ.get("PATH", "")

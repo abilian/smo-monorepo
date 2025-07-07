@@ -1,3 +1,5 @@
+"""Additional unit tests for the placement utility."""
+
 import pytest
 
 from smo_core.utils.placement import (

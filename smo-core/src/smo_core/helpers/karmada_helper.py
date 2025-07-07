@@ -3,7 +3,7 @@
 from kubernetes import client, config
 from kubernetes.utils import parse_quantity
 
-from .helpers import format_memory
+from smo_core.utils import format_memory
 
 
 class KarmadaHelper:

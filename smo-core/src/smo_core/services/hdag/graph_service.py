@@ -7,11 +7,11 @@ import yaml
 from devtools import debug
 
 from smo_core.models import Cluster, Graph, Service
-from smo_core.utils.external_commands import run_hdarctl, run_helm
+from smo_core.utils import run_hdarctl, run_helm
 from smo_core.utils.intent_translation import (
-    tranlsate_cpu,
-    tranlsate_memory,
-    tranlsate_storage,
+    translate_cpu,
+    translate_memory,
+    translate_storage,
 )
 from smo_core.utils.placement import (
     calculate_naive_placement,
@@ -59,7 +59,7 @@ def deploy_graph(context, db_session, project, graph_descriptor):
 
     services = graph_descriptor["services"]
     cpu_limits = [
-        tranlsate_cpu(s["deployment"]["intent"]["compute"]["cpu"]) for s in services
+        translate_cpu(s["deployment"]["intent"]["compute"]["cpu"]) for s in services
     ]
     acceleration_list = [
         1 if s["deployment"]["intent"]["compute"]["gpu"]["enabled"] == "True" else 0
@@ -108,11 +108,11 @@ def deploy_graph(context, db_session, project, graph_descriptor):
             )
             prom_helper.update_alert_rules(context, alert, "add")
 
-        cpu = tranlsate_cpu(service_data["deployment"]["intent"]["compute"]["cpu"])
-        memory = tranlsate_memory(
+        cpu = translate_cpu(service_data["deployment"]["intent"]["compute"]["cpu"])
+        memory = translate_memory(
             service_data["deployment"]["intent"]["compute"]["ram"]
         )
-        storage = tranlsate_storage(
+        storage = translate_storage(
             service_data["deployment"]["intent"]["compute"]["storage"]
         )
         gpu = (
