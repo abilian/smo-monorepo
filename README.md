@@ -43,8 +43,7 @@ graph TD
         E[Prometheus]
         F[Grafana]
         G[OCI Registry]
-        H[Database: PostgreSQL for Web]
-        I[Database: SQLite for CLI]
+        H[Database: PostgreSQL or SQLite]
     end
 
     A --> C
@@ -54,9 +53,7 @@ graph TD
     C --> E
     C --> F
     C --> G
-
-    A --> H
-    B --> I
+    C --> H
 ```
 
 ---
