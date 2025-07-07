@@ -9,7 +9,7 @@ from .helpers import format_memory
 class KarmadaHelper:
     """Karmada helper class."""
 
-    def __init__(self, config_file_path, namespace="default"):
+    def __init__(self, config_file_path: str, namespace: str="default"):
         self.namespace = namespace
         self.config_file_path = config_file_path
 
