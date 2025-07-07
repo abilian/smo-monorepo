@@ -1,13 +1,14 @@
 from typing import Iterator
+
+from dishka import Provider, Scope, provide
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session, sessionmaker
-from dishka import Provider, Scope, provide
 
+from smo_core.models.base import Base
+from smo_core.utils.grafana_helper import GrafanaHelper
 from smo_core.utils.karmada_helper import KarmadaHelper
 from smo_core.utils.prometheus_helper import PrometheusHelper
-from smo_core.utils.grafana_helper import GrafanaHelper
-from smo_core.database import Base
 
 
 class Config:
@@ -36,6 +37,7 @@ class ConfigProvider(Provider):
 
 class InfraProvider(Provider):
     """Provides infrastructure helper clients."""
+
     # All helpers are singletons for the app's lifetime
     scope = Scope.APP
 

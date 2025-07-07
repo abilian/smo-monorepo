@@ -10,7 +10,12 @@ from .grafana_template import (
 
 
 class GrafanaHelper:
-    def __init__(self, grafana_host: str, username: str="admin", password: str="prom-operator"):
+    def __init__(
+        self,
+        grafana_host: str,
+        username: str = "admin",
+        password: str = "prom-operator",
+    ):
         self.grafana_host = grafana_host
         self.auth = HTTPBasicAuth(username, password)
 

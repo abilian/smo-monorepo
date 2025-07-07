@@ -8,7 +8,7 @@ from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.orm.attributes import Mapped
 from sqlalchemy.types import JSON
 
-from smo_core.database import Base
+from ..base import Base
 
 JsonType = JSON().with_variant(JSONB, "postgresql")
 

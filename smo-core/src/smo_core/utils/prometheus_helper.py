@@ -8,7 +8,9 @@ from kubernetes.client.rest import ApiException
 class PrometheusHelper:
     """Helper class to execute Prometheus queries."""
 
-    def __init__(self, prometheus_host: str, time_window: str="5", time_unit: str="s"):
+    def __init__(
+        self, prometheus_host: str, time_window: str = "5", time_unit: str = "s"
+    ):
         self.prometheus_host = prometheus_host
         self.time_window = time_window
         self.time_unit = time_unit

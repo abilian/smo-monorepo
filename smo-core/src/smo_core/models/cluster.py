@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from smo_core.database import Base
+from .base import Base
 
 
 class Cluster(Base):

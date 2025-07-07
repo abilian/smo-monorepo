@@ -8,11 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from smo_cli.core.config import Config
-from smo_core import models
-from smo_core.database import Base
-
-# Ensure model stay imported to register them with the Base metadata.
-assert models
+from smo_core.models.base import Base
 
 _engine = None
 
