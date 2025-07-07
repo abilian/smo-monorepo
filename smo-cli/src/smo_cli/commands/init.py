@@ -8,6 +8,9 @@ from smo_cli.core.config import (
     DB_FILE,
     DEFAULT_SMO_DIR,
     create_default_config,
+    get_config_file,
+    get_db_file,
+    get_smo_dir,
 )
 from smo_cli.core.database import init_db
 
@@ -16,15 +19,19 @@ from smo_cli.core.database import init_db
 def init():
     """Initializes the SMO-CLI environment in ~/.smo/"""
     console = Console()
-    console.print(f"Initializing SMO-CLI environment in [cyan]{DEFAULT_SMO_DIR}[/]...")
-    if not os.path.exists(DEFAULT_SMO_DIR):
-        os.makedirs(DEFAULT_SMO_DIR)
-        console.print(f"  -> Created directory: [green]{DEFAULT_SMO_DIR}[/green]")
+    smo_dir = get_smo_dir()
+    config_file = get_config_file()
+    db_file = get_db_file()
 
-    if not os.path.exists(CONFIG_FILE):
+    console.print(f"Initializing SMO-CLI environment in [cyan]{smo_dir}[/]...")
+    if not os.path.exists(smo_dir):
+        os.makedirs(smo_dir)
+        console.print(f"  -> Created directory: [green]{smo_dir}[/green]")
+
+    if not os.path.exists(config_file):
         create_default_config()
         console.print(
-            f"  -> Created default configuration file: [green]{CONFIG_FILE}[/green]"
+            f"  -> Created default configuration file: [green]{config_file}[/green]"
         )
         console.print(
             "  -> [bold yellow]IMPORTANT:[/] Please edit this file to match your environment.",
@@ -32,11 +39,11 @@ def init():
         )
     else:
         console.print(
-            f"  -> Configuration file already exists: [yellow]{CONFIG_FILE}[/yellow]"
+            f"  -> Configuration file already exists: [yellow]{config_file}[/yellow]"
         )
 
     # Initialize the database using the engine from the core.database module
     init_db()
-    console.print(f"  -> Ensured local database is created: [green]{DB_FILE}[/green]")
+    console.print(f"  -> Ensured local database is created: [green]{db_file}[/green]")
 
     console.print("\n[bold green]Initialization complete.[/bold green]")

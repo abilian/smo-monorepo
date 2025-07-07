@@ -5,9 +5,13 @@ This module handles the CLI-specific database setup for SQLite.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from smo_core import models
 from smo_core.database import Base
 
 from .config import DB_FILE
+
+# Ensure model stay imported to register them with the Base metadata.
+assert models
 
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_FILE}"
 
@@ -26,6 +30,4 @@ def init_db():
     This function imports all necessary models from smo_core before calling create_all
     to ensure they are registered on the Base's metadata.
     """
-    from smo_core import models
-
     Base.metadata.create_all(bind=engine)
