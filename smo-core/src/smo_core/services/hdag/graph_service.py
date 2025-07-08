@@ -4,6 +4,7 @@ import tempfile
 from os import path, walk
 
 import yaml
+from sqlalchemy.orm.session import Session
 
 from smo_core.models import Cluster, Graph, Service
 from smo_core.utils import run_hdarctl, run_helm
@@ -21,18 +22,18 @@ from smo_core.utils.placement import (
 from smo_core.utils.scaling import decide_replicas
 
 
-def fetch_project_graphs(db_session, project: str):
+def fetch_project_graphs(db_session: Session, project: str):
     """Retrieves all the descriptors of a project"""
     graphs = db_session.query(Graph).filter_by(project=project).all()
     return [graph.to_dict() for graph in graphs]
 
 
-def fetch_graph(db_session, name: str):
+def fetch_graph(db_session: Session, name: str):
     """Retrieves the descriptor of an application graph."""
     return db_session.query(Graph).filter_by(name=name).first()
 
 
-def deploy_graph(context, db_session, project, graph_descriptor):
+def deploy_graph(context, db_session: Session, project, graph_descriptor):
     """
     Instantiates an application graph by using Helm to
     deploy each service's artifact.
@@ -168,7 +169,7 @@ def deploy_graph(context, db_session, project, graph_descriptor):
     db_session.commit()
 
 
-def trigger_placement(context, db_session, name):
+def trigger_placement(context, db_session: Session, name: str):
     graph = fetch_graph(db_session, name)
     if not graph:
         raise ValueError(f"Graph with name {name} not found")
@@ -224,7 +225,7 @@ def trigger_placement(context, db_session, name):
     db_session.commit()
 
 
-def start_graph(context, db_session, name):
+def start_graph(context, db_session: Session, name: str) -> None:
     graph = fetch_graph(db_session, name)
     if not graph:
         raise ValueError(f"Graph {name} not found")
@@ -248,7 +249,7 @@ def start_graph(context, db_session, name):
     db_session.commit()
 
 
-def stop_graph(context, db_session, name):
+def stop_graph(context, db_session: Session, name: str) -> None:
     graph = fetch_graph(db_session, name)
     if not graph:
         raise ValueError(f"Graph {name} not found")
@@ -263,7 +264,7 @@ def stop_graph(context, db_session, name):
     db_session.commit()
 
 
-def remove_graph(context, db_session, name):
+def remove_graph(context, db_session: Session, name: str) -> None:
     graph = fetch_graph(db_session, name)
     if not graph:
         raise ValueError(f"Graph {name} not found")
@@ -275,7 +276,7 @@ def remove_graph(context, db_session, name):
     db_session.commit()
 
 
-def deploy_conditional_service(context, db_session, data):
+def deploy_conditional_service(context, db_session: Session, data: dict) -> None:
     for alert in data["alerts"]:
         labels = alert.get("labels", {})
         if "service" in labels:
