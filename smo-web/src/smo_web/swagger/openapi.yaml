@@ -24,6 +24,26 @@ paths:
           $ref: "#/components/responses/Error"
 
   /project/{project}/graphs:
+    get:
+      summary: Get project graphs
+      description: Fetch all graphs under a project.
+      operationId: smo_web.handlers.graph.get_all_for_project
+      tags: [Graph]
+      parameters:
+        - name: project
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of all application graphs under a project.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Graph"
     post:
       summary: Deploy a new HDAG
       description: Deploys a Hyper Distributed Application Graph from a descriptor.
