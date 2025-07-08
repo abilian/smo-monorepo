@@ -21,7 +21,7 @@ def create_basic_dashboard(name):
     }
 
 
-def create_dashboard_variables(variable_name, possible_values):
+def create_dashboard_variables(variable_name: str, possible_values: list):
     """Create variables for the Grafana dashboard."""
 
     options = []

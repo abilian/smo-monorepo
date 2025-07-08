@@ -10,12 +10,7 @@ from .grafana_template import (
 
 
 class GrafanaHelper:
-    def __init__(
-        self,
-        grafana_host: str,
-        username: str = "admin",
-        password: str = "prom-operator",
-    ):
+    def __init__(self, grafana_host: str, username: str, password: str):
         self.grafana_host = grafana_host
         self.auth = HTTPBasicAuth(username, password)
 
@@ -27,7 +22,7 @@ class GrafanaHelper:
         res.raise_for_status()
         return res.json()
 
-    def create_cluster_dashboard(self, cluster_name):
+    def create_cluster_dashboard(self, cluster_name: str):
         dashboard = create_basic_dashboard(cluster_name)
         dashboard["dashboard"]["panels"] = create_panels_cluster(cluster_name)
         return dashboard

@@ -8,14 +8,15 @@ from .database import DbManager
 def get_core_context() -> SmoCoreContext:
     """Creates the core context object needed by service functions for a request."""
     core_config = config["SMO_CORE_CONFIG"]
+    grafana_config = core_config["grafana"]
     return SmoCoreContext(
         config=core_config,
         karmada=KarmadaHelper(core_config["karmada_kubeconfig"]),
         prometheus=PrometheusHelper(core_config["prometheus_host"]),
         grafana=GrafanaHelper(
-            core_config["grafana"]["host"],
-            core_config["grafana"]["username"],
-            core_config["grafana"]["password"],
+            grafana_config["host"],
+            grafana_config["username"],
+            grafana_config["password"],
         ),
     )
 

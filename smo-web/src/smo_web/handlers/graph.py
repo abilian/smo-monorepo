@@ -43,21 +43,33 @@ def remove(name):
     context = get_core_context()
     db_session = get_db_session()
     graph_service.remove_graph(context, db_session, name)
-    return f"Graph {name} removed successfully", 200, {"Content-Type": "application/json"}
+    return (
+        f"Graph {name} removed successfully",
+        200,
+        {"Content-Type": "application/json"},
+    )
 
 
 def start(name):
     context = get_core_context()
     db_session = get_db_session()
     graph_service.start_graph(context, db_session, name)
-    return f"Graph {name} start triggered successfully", 200, {"Content-Type": "application/json"}
+    return (
+        f"Graph {name} start triggered successfully",
+        200,
+        {"Content-Type": "application/json"},
+    )
 
 
 def stop(name):
     context = get_core_context()
     db_session = get_db_session()
     graph_service.stop_graph(context, db_session, name)
-    return f"Graph {name} stop triggered successfully", 200, {"Content-Type": "application/json"}
+    return (
+        f"Graph {name} stop triggered successfully",
+        200,
+        {"Content-Type": "application/json"},
+    )
 
 
 def placement(name):

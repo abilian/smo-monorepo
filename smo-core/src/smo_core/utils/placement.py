@@ -119,9 +119,9 @@ def calculate_naive_placement(
     Parameters
     ---
     cluster_capacities: List of CPU capacity for each cluster
-    cluster_acceleration: List of GPU acceleration feature for each cluster
+    cluster_accelerations: List of GPU acceleration feature for each cluster
     cpu_limits: List of CPU limits for each service
-    acceleration: List of GPU acceleration feature for each service
+    accelerations: List of GPU acceleration feature for each service
     replicas: List of number of replicas
 
     Return value
@@ -137,7 +137,8 @@ def calculate_naive_placement(
 
     if max(service_reqs) > min(cluster_capacities):
         raise ValueError(
-            "A single service cannot fit into any cluster. Increase cluster capacity or reduce service requirements."
+            "A single service cannot fit into any cluster. "
+            "Increase cluster capacity or reduce service requirements."
         )
 
     if sum(service_reqs) > sum(cluster_capacities):
