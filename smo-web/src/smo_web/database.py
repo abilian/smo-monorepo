@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 from dataclasses import dataclass
 
@@ -20,7 +18,10 @@ class DbManager:
         This is used to create sessions and interact with the database.
         """
         db_uri = self.config["SQLALCHEMY_URI"]
-        return create_engine(db_uri, connect_args={"check_same_thread": False})
+        return create_engine(db_uri)
+
+        # For SQLite only
+        # return create_engine(db_uri, connect_args={"check_same_thread": False})
 
     def get_session_factory(self):
         engine = self.get_engine()

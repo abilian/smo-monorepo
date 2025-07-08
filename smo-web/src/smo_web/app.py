@@ -1,11 +1,11 @@
 import os
+
 import connexion
 from connexion.options import SwaggerUIOptions
 
 # from .config import configs
 # from .database import db
 from .error_handlers import register_error_handlers
-
 
 swagger_ui_options = SwaggerUIOptions(
     swagger_ui=True,

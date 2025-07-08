@@ -1,6 +1,6 @@
 import connexion
-from starlette.exceptions import HTTPException
 from connexion.problem import problem
+from starlette.exceptions import HTTPException
 
 
 def handle_value_error(request, exc: ValueError):

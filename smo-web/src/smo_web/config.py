@@ -71,7 +71,9 @@ for var_name in ENV_VARS:
     config[var_name] = var_value
 
 if not SQLALCHEMY_URI:
-    SQLALCHEMY_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    SQLALCHEMY_URI = (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
 
 SMO_CORE_CONFIG = {
     "karmada_kubeconfig": str(Path(HOME) / ".kube" / KARMADA_KUBECONFIG),

@@ -1,5 +1,15 @@
-from smo_core.services.hdag import graph_service
 from smo_web.util import get_core_context, get_db_session
+
+from smo_core.services.hdag import graph_service
+
+
+def list(project):
+    """Handler for GET /project/{project}/graphs."""
+    context = get_core_context()
+    db_session = get_db_session()
+
+    graphs = graph_service.fetch_project_graphs(context, db_session, project)
+    return [graph.to_dict() for graph in graphs], 200
 
 
 def deploy(project, body):
