@@ -63,6 +63,10 @@ paths:
           application/json:
             schema:
               type: object
+          # Also YAML support for compatibility (TODO: remove in future?)
+          application/x-yaml:
+            schema:
+              type: object
       responses:
         '202':
           description: Graph deployment successfully triggered.
