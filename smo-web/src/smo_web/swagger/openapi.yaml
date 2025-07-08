@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Synergetic Meta-Orchestrator (SMO) API
+  version: "1.0.0"
+  description: API for managing Hyper Distributed Application Graphs (HDAGs).
+
+paths:
+  /clusters:
+    get:
+      summary: Fetches all known clusters
+      description: Retrieves cluster information from the SMO's database, which is synced from Karmada.
+      operationId: smo_web.handlers.cluster.get_clusters
+      tags: [Clusters]
+      responses:
+        '200':
+          description: A list of clusters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cluster"
+        '500':
+          $ref: "#/components/responses/Error"
+
+  /project/{project}/graphs:
+    post:
+      summary: Deploy a new HDAG
+      description: Deploys a Hyper Distributed Application Graph from a descriptor.
+      operationId: smo_web.handlers.graph.deploy
+      tags: [Graph]
+      parameters:
+        - name: project
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The project/namespace to deploy the graph into.
+      requestBody:
+        description: HDAG descriptor as a JSON object. It can contain an `artifact` key pointing to an OCI URL, or be the descriptor itself.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: Graph deployment successfully triggered.
+        '400':
+          $ref: "#/components/responses/Error"
+
+  /graphs/{name}:
+    get:
+      summary: Get a specific graph
+      operationId: smo_web.handlers.graph.get_graph
+      tags: [Graph]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested graph.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Graph"
+        '404':
+          $ref: "#/components/responses/NotFound"
+    delete:
+      summary: Remove a graph
+      operationId: smo_web.handlers.graph.remove
+      tags: [Graph]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Graph removed successfully.
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /graphs/{name}/start:
+    post: # Using POST for state change is more RESTful
+      summary: Start a stopped graph
+      operationId: smo_web.handlers.graph.start
+      tags: [Graph]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Graph start successfully triggered.
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /graphs/{name}/stop:
+    post: # Using POST for state change
+      summary: Stop a running graph
+      operationId: smo_web.handlers.graph.stop
+      tags: [Graph]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Graph stop successfully triggered.
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /graphs/{name}/placement:
+    post: # Using POST for triggering an action
+      summary: Trigger placement optimization
+      operationId: smo_web.handlers.graph.placement
+      tags: [Graph]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Placement triggered successfully.
+        '404':
+          $ref: "#/components/responses/NotFound"
+
+  /alerts:
+    post:
+      summary: Webhook for Prometheus Alertmanager
+      operationId: smo_web.handlers.graph.alert
+      tags: [Internal]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Alert processed.
+
+components:
+  schemas:
+    Cluster:
+      type: object
+      properties:
+        name: { type: string }
+        available_cpu: { type: number }
+        available_ram: { type: string }
+        availability: { type: boolean }
+    Graph:
+      type: object
+      properties:
+        name: { type: string }
+        project: { type: string }
+        status: { type: string }
+        services:
+          type: array
+          items:
+            type: object
+    Problem:
+      type: object
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+
+  responses:
+    Error:
+      description: An error occurred.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: The specified resource was not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
