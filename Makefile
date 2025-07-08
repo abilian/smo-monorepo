@@ -8,15 +8,15 @@ help:
 .PHONY: test
 ## Run tests
 test:
-	pytest smo-core
-	pytest smo-cli
-	pytest smo-web
+	uv run pytest smo-core
+	uv run pytest smo-cli
+	uv run pytest smo-web
 
 
 .PHONY: lint
 ## Run linters on the codebase
 lint:
-	ruff check
+	uv run ruff check
 
 
 .PHONY: clean
