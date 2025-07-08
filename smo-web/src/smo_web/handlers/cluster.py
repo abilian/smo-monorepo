@@ -9,5 +9,4 @@ def get_clusters():
     db_session = get_db_session()
 
     clusters = cluster_service.fetch_clusters(context, db_session)
-    headers = {"Content-Type": "application/json"}
-    return clusters, 200, headers
+    return clusters, 200, {"Content-Type": "application/json"}
