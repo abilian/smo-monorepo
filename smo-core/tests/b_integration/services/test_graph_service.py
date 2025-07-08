@@ -152,7 +152,6 @@ def test_deploy_graph(mock_context, populated_db_session):
     # 4. Check that Prometheus helper was called for the conditional alert
     assert mock_context.prometheus.update_alert_rules.call_count == 1
     mock_context.prometheus.update_alert_rules.assert_called_once_with(
-        mock_context,
         {
             "alert": "high-load",
             "annotations": {
@@ -205,7 +204,6 @@ def test_remove_graph(mock_context, populated_db_session):
 
     # Check that the alert removal was called for the conditional service
     mock_context.prometheus.update_alert_rules.assert_called_with(
-        mock_context,
         # The second call is the removal
         {
             "alert": "high-load",

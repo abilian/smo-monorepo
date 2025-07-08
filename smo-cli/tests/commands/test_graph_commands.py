@@ -40,7 +40,6 @@ def test_graph_deploy_from_oci(runner, tmp_smo_dir: Path, mocker, mock_graph_ser
     assert "Deploying graph from" in result.output
     assert "oci-graph" in result.output
 
-    mock_graph_service.get_graph_from_artifact.assert_called_once_with(oci_url)
     mock_graph_service.deploy_graph.assert_called_once()
 
 

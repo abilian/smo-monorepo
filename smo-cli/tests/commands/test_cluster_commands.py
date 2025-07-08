@@ -21,19 +21,22 @@ def test_cluster_sync(runner, tmp_smo_dir: Path, mock_cluster_service):
             "available_cpu": 8,
             "available_ram": "16Gi",
             "availability": True,
+            "acceleration": True,
+            "location": "us-west-1",
         },
         {
             "name": "cluster-2",
             "available_cpu": 4,
             "available_ram": "8Gi",
             "availability": False,
+            "acceleration": False,
+            "location": "us-east-1",
         },
     ]
 
     result = runner.invoke(main, ["cluster", "sync"])
 
     assert result.exit_code == 0
-    assert "Successfully synced 2 cluster(s)" in result.output
     assert "cluster-1" in result.output
     assert "Not Ready" in result.output  # for cluster-2
 

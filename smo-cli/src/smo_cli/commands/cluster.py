@@ -54,7 +54,7 @@ def list_clusters(ctx: CliContext):
         sys.exit(1)
 
 
-def show_clusters(clusters):
+def show_clusters(clusters: Iterable[Cluster | dict]):
     table = Table(title="Clusters")
     table.add_column("Name", style="cyan")
     table.add_column("Location", style="white")
