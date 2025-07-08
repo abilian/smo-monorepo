@@ -8,6 +8,7 @@ dependencies = [
     "smo-core",
     "connexion[swagger-ui]>=3.0",
     "python-dotenv>=1.0",
+    "psycopg2>=2.9.10",
 ]
 
 [dependency-groups]
