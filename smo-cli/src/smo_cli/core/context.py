@@ -4,7 +4,7 @@ from functools import update_wrapper
 import click
 from rich.console import Console
 
-from smo_core.context import SmoContext
+from smo_core.context import SmoCoreContext
 from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
 
 from .config import Config
@@ -25,7 +25,7 @@ class CliContext:
     _karmada_helper: KarmadaHelper = None
     _prometheus_helper: PrometheusHelper = None
     _grafana_helper: GrafanaHelper = None
-    _smo_context: SmoContext = None
+    _smo_context: SmoCoreContext = None
 
     @property
     def config_data(self):
@@ -66,10 +66,10 @@ class CliContext:
         return self._grafana_helper
 
     @property
-    def core_context(self) -> SmoContext:
+    def core_context(self) -> SmoCoreContext:
         """Creates and returns the shared SmoContext object for the service layer."""
         if self._smo_context is None:
-            self._smo_context = SmoContext(
+            self._smo_context = SmoCoreContext(
                 config=self.config_data,
                 karmada=self.karmada,
                 prometheus=self.prometheus,

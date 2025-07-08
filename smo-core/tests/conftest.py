@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from smo_core.context import SmoContext
+from smo_core.context import SmoCoreContext
 from smo_core.models.base import Base
 from smo_core.utils import format_memory
 
@@ -131,7 +131,7 @@ def mock_context(mocker):
         "smo_core.utils.external_commands.run_helm", return_value="Mock helm output"
     )
 
-    context = SmoContext(
+    context = SmoCoreContext(
         config=mock_config,
         karmada=MockKarmadaHelper(),
         prometheus=MockPrometheusHelper(),

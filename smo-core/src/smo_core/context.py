@@ -11,7 +11,7 @@ from .helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
 
 
 @dataclass
-class SmoContext:
+class SmoCoreContext:
     """A context object to hold application state."""
 
     config: dict
