@@ -1,24 +1,36 @@
 all: lint test
 
+## Help message
+help:
+	adt help-make
+
+
+.PHONY: test
+## Run tests
 test:
 	pytest smo-core
 	pytest smo-cli
 
-.PHONY: test
 
-
+.PHONY: lint
+## Run linters on the codebase
 lint:
 	ruff check
 
-.PHONY: test
+
+.PHONY: clean
+## Clean build artifacts and runtime files
+clean:
+	cd smo-core && adt clean
+	cd smo-cli && adt clean
 
 
+.PHONY: format
+## Format code using isort and ruff
 format:
 	cd smo-core && isort .
 	cd smo-cli && isort .
 	ruff format
-
-.PHONY: format
 
 
 ## Sync code with remote repositories
@@ -28,13 +40,10 @@ sync-code:
 	git pull sourcehut main
 	@make push-code
 
-.PHONY: sync-code
-
-
 ## Push code to remote repositories
 push-code:
 	git push origin main
 	# git push gh
 	git push sourcehut main
 
-.PHONY: push-code
+.PHONY: sync-code push-code
