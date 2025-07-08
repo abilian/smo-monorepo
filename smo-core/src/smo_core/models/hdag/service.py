@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB

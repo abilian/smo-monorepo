@@ -5,9 +5,7 @@ import click
 from rich.console import Console
 
 from smo_core.context import SmoContext
-from smo_core.helpers import GrafanaHelper
-from smo_core.helpers import KarmadaHelper
-from smo_core.helpers import PrometheusHelper
+from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
 
 from .config import Config
 

@@ -21,13 +21,13 @@ from smo_core.utils.placement import (
 from smo_core.utils.scaling import decide_replicas
 
 
-def fetch_project_graphs(db_session, project):
+def fetch_project_graphs(db_session, project: str):
     """Retrieves all the descriptors of a project"""
     graphs = db_session.query(Graph).filter_by(project=project).all()
     return [graph.to_dict() for graph in graphs]
 
 
-def fetch_graph(db_session, name):
+def fetch_graph(db_session, name: str):
     """Retrieves the descriptor of an application graph."""
     return db_session.query(Graph).filter_by(name=name).first()
 
@@ -103,7 +103,7 @@ def deploy_graph(context, db_session, project, graph_descriptor):
                 event["condition"]["description"],
                 svc_name,
             )
-            prom_helper.update_alert_rules(context, alert, "add")
+            prom_helper.update_alert_rules(alert, "add")
 
         cpu = translate_cpu(service_data["deployment"]["intent"]["compute"]["cpu"])
         memory = translate_memory(
@@ -234,7 +234,7 @@ def start_graph(context, db_session, name):
     graph.status = "Running"
     for service in graph.services:
         if service.alert:
-            context.prometheus.update_alert_rules(context, service.alert, "add")
+            context.prometheus.update_alert_rules(service.alert, "add")
         if service.status == "Not deployed":
             helm_install_artifact(
                 context,
@@ -350,7 +350,7 @@ def helm_install_artifact(
 def helm_uninstall_graph(context, services, namespace):
     for service in services:
         if service.alert:
-            context.prometheus.update_alert_rules(context, service.alert, "remove")
+            context.prometheus.update_alert_rules(service.alert, "remove")
         if service.status == "Deployed":
             print(f"Uninstalling service {service.name}...")
             args = [
@@ -378,7 +378,7 @@ def create_service_imports(services, service_placement):
     return service_import_clusters
 
 
-def create_alert(event_id, prom_query, grace_period, description, name):
+def create_alert(event_id, prom_query, grace_period, description, name) -> dict:
     return {
         "alert": f"{event_id}",
         "annotations": {"description": description, "summary": description},

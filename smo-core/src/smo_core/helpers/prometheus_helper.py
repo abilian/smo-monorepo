@@ -49,7 +49,7 @@ class PrometheusHelper:
         else:
             return float("NaN")
 
-    def update_alert_rules(self, alert, action):
+    def update_alert_rules(self, alert: dict, action: str) -> None:
         """Update prometheus rules depending on action. Either `add` or `remove`"""
 
         name = "kube-prometheus-stack-0"
@@ -112,5 +112,7 @@ class PrometheusHelper:
 
         except ApiException as e:
             print(f"Exception when updating PrometheusRule: {e}")
+            # raise
         except ValueError as ve:
             print(ve)
+            # raise

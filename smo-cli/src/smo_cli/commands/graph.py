@@ -1,3 +1,7 @@
+import sys
+import traceback
+from typing import Iterable
+
 import click
 import yaml
 from rich.console import Console
@@ -34,7 +38,7 @@ def deploy(ctx: CliContext, descriptor: str, project: str):
             console.print(
                 "[bold red]Error:[/] Invalid HDAG descriptor format.", style="red"
             )
-            return
+            sys.exit(1)
 
         with ctx.db_session() as session:
             graph_service.deploy_graph(
@@ -47,15 +51,8 @@ def deploy(ctx: CliContext, descriptor: str, project: str):
         console.print("Use 'smo-cli graph list' to check status.")
     except Exception as e:
         console.print(f"[bold red]Error during deployment:[/] {e}")
-
-
-def get_graph_data(descriptor):
-    if descriptor.startswith("oci://"):
-        return graph_service.get_graph_from_artifact(descriptor)
-
-    with open(descriptor, "r") as f:
-        graph_data = yaml.safe_load(f)
-        return graph_data
+        traceback.print_exc()
+        sys.exit(1)
 
 
 @graph.command(name="list")
@@ -65,32 +62,22 @@ def list_graphs(ctx: CliContext, project: str):
     """Lists all deployed graphs."""
     try:
         with ctx.db_session() as session:
-            graphs = (
-                graph_service.fetch_project_graphs(session, project)
-                if project
-                else session.query(Graph).all()
-            )
-
-        if not graphs:
-            msg = "No graphs found."
             if project:
-                msg += f" in project '{project}'."
-            console.print(msg, style="yellow")
-            return
+                graphs = graph_service.fetch_project_graphs(session, project)
+            else:
+                graphs = session.query(Graph).all()
 
-        table = Table(title="Deployed Graphs")
-        table.add_column("Name", style="cyan")
-        table.add_column("Project", style="magenta")
-        table.add_column("Status", style="yellow")
-        table.add_column("Services", style="green")
+            if not graphs:
+                msg = "No graphs found."
+                if project:
+                    msg += f" in project '{project}'."
+                console.print(msg, style="yellow")
+                return
 
-        for g_data in graphs:
-            g = g_data if isinstance(g_data, dict) else g_data.to_dict()
-            num_services = len(g.get("services", []))
-            table.add_row(g["name"], g["project"], g["status"], str(num_services))
-        console.print(table)
+            show_graphs(graphs)
     except Exception as e:
         console.print(f"[bold red]Error listing graphs:[/] {e}")
+        raise
 
 
 @graph.command()
@@ -119,23 +106,11 @@ def describe(ctx: CliContext, name: str):
             )
         )
 
-        if g.get("services"):
-            table = Table(title="Services")
-            table.add_column("Service Name", style="cyan")
-            table.add_column("Status", style="yellow")
-            table.add_column("Cluster Affinity", style="magenta")
-            table.add_column("Artifact", style="white")
-            for svc in g["services"]:
-                table.add_row(
-                    svc["name"],
-                    svc["status"],
-                    svc.get("cluster_affinity") or "N/A",
-                    svc["artifact_ref"],
-                )
-            console.print(table)
+        if services := g.get("services"):
+            show_services(services)
 
-        if g.get("hdaGraph"):
-            yaml_content = yaml.dump(g["hdaGraph"])
+        if hda_graph := g.get("hdaGraph"):
+            yaml_content = yaml.dump(hda_graph)
             console.print(
                 Panel(
                     Syntax(yaml_content, "yaml", theme="monokai"),
@@ -145,6 +120,7 @@ def describe(ctx: CliContext, name: str):
             )
     except Exception as e:
         console.print(f"[bold red]Error describing graph:[/] {e}")
+        raise
 
 
 @graph.command()
@@ -152,11 +128,13 @@ def describe(ctx: CliContext, name: str):
 @pass_context
 def remove(ctx: CliContext, name: str):
     """Removes a graph completely from SMO and the cluster."""
-    if not click.confirm(
-        f"Are you sure you want to permanently remove graph '{name}'? This action cannot be undone.",
-        abort=True,
-    ):
+    msg = (
+        f"Are you sure you want to permanently remove graph '{name}'? "
+        f"This action cannot be undone."
+    )
+    if not click.confirm(msg, abort=True):
         return
+
     console.print(f"Removing graph [cyan]'{name}'[/cyan]...", style="red")
     try:
         with ctx.db_session() as session:
@@ -164,10 +142,7 @@ def remove(ctx: CliContext, name: str):
         console.print(f"[green]Graph '{name}' removed successfully.[/green]")
     except Exception as e:
         console.print(f"[bold red]Error removing graph:[/] {e}")
-
-
-# Add other commands (stop, start, re-place, etc.) following the same pattern...
-# For brevity, I'll add one more example: re-place
+        sys.exit(1)
 
 
 @graph.command(name="re-place")
@@ -187,3 +162,59 @@ def re_place(ctx: CliContext, name: str):
         console.print("Check new placement with 'smo-cli graph describe'.")
     except Exception as e:
         console.print(f"[bold red]Error during re-placement:[/] {e}")
+        sys.exit(1)
+
+
+# TODO: Add other commands (stop, start, etc.) following the same pattern...
+
+
+#
+# Utilities
+#
+def get_graph_data(descriptor):
+    if descriptor.startswith("oci://"):
+        descriptor = "http://" + descriptor[len("oci://") :]
+
+    if descriptor.startswith("http://") or descriptor.startswith("https://"):
+        return graph_service.get_graph_from_artifact(descriptor)
+
+    if descriptor.endswith(".yaml") or descriptor.endswith(".yml"):
+        with open(descriptor, "r") as f:
+            graph_data = yaml.safe_load(f)
+            return graph_data
+
+    raise ValueError(f"Invalid HDAG descriptor: {descriptor}")
+
+
+def show_graphs(graphs: Iterable[Graph | dict]) -> None:
+    table = Table(title="Deployed Graphs")
+    table.add_column("Name", style="cyan")
+    table.add_column("Project", style="magenta")
+    table.add_column("Status", style="yellow")
+    table.add_column("Services", style="green")
+    for g_data in graphs:
+        g = g_data if isinstance(g_data, dict) else g_data.to_dict()
+        num_services = len(g.get("services", []))
+        table.add_row(
+            g["name"],
+            g["project"],
+            g["status"],
+            str(num_services),
+        )
+    console.print(table)
+
+
+def show_services(services: Iterable[dict]) -> None:
+    table = Table(title="Services")
+    table.add_column("Service Name", style="cyan")
+    table.add_column("Status", style="yellow")
+    table.add_column("Cluster Affinity", style="magenta")
+    table.add_column("Artifact", style="white")
+    for service in services:
+        table.add_row(
+            service["name"],
+            service["status"],
+            service.get("cluster_affinity") or "N/A",
+            service["artifact_ref"],
+        )
+    console.print(table)
