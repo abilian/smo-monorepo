@@ -10,8 +10,6 @@ from sqlalchemy.orm import sessionmaker
 from smo_cli.core.config import Config
 from smo_core.models.base import Base
 
-_engine = None
-
 
 @dataclass
 class DbManager:

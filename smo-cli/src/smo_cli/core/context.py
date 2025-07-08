@@ -8,6 +8,7 @@ from smo_core.context import SmoCoreContext
 from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
 
 from .config import Config
+from .database import DbManager
 
 console = Console()
 
@@ -34,8 +35,6 @@ class CliContext:
 
     def db_session(self):
         """Provides a new database session."""
-        from smo_cli.core.database import DbManager
-
         db_manager = DbManager(self.cli_config)
         session_factory = db_manager.get_session_factory()
         return session_factory()
