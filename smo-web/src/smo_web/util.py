@@ -2,6 +2,7 @@ from smo_core.context import SmoCoreContext
 from smo_core.helpers import KarmadaHelper, PrometheusHelper, GrafanaHelper
 
 from .config import config
+from .database import DbManager
 
 
 def get_core_context() -> SmoCoreContext:
@@ -21,4 +22,7 @@ def get_core_context() -> SmoCoreContext:
 
 def get_db_session():
     """Returns the request-scoped database session."""
-    return db.session
+
+    db_manager = DbManager(config)
+    session_factory = db_manager.get_session_factory()
+    return session_factory()
