@@ -37,14 +37,14 @@ format:
 ## Sync code with remote repositories
 sync-code:
 	git pull origin main
-	# git pull gh
+	git pull github main
 	git pull sourcehut main
 	@make push-code
 
 ## Push code to remote repositories
 push-code:
 	git push origin main
-	# git push gh
+	git push github main
 	git push sourcehut main
 
 .PHONY: sync-code push-code
