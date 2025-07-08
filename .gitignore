@@ -10,9 +10,10 @@ wheels/
 .venv
 .python-version
 
-# Local stuff
+# Local & secret stuff
 sandbox
 tmp
+.envrc
 /tools
 
 # Temp (remove soon)

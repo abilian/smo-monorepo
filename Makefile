@@ -23,6 +23,7 @@ lint:
 clean:
 	cd smo-core && adt clean
 	cd smo-cli && adt clean
+	rm -rf examples/brussels-demo/*.tar.gz
 
 
 .PHONY: format
