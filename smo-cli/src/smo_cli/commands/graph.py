@@ -165,7 +165,41 @@ def re_place(ctx: CliContext, name: str):
         sys.exit(1)
 
 
-# TODO: Add other commands (stop, start, etc.) following the same pattern...
+@graph.command()
+@click.argument("name", type=click.STRING)
+@pass_context
+def stop(ctx: CliContext, name: str):
+    """Stops a running graph (uninstalls artifacts)."""
+    msg = (
+        f"Are you sure you want to stop graph '{name}'? "
+        f"This will uninstall its Helm charts."
+    )
+    if not click.confirm(msg, abort=True):
+        return
+
+    console.print(f"Stopping graph [cyan]'{name}'[/cyan]...", style="yellow")
+    try:
+        with ctx.db_session() as session:
+            graph_service.stop_graph(ctx.core_context, session, name)
+        console.print(f"[green]Graph '{name}' stopped successfully.[/green]")
+    except Exception as e:
+        console.print(f"[bold red]Error stopping graph:[/] {e}")
+        sys.exit(1)
+
+
+@graph.command()
+@click.argument("name", type=click.STRING)
+@pass_context
+def start(ctx: CliContext, name: str):
+    """Starts a stopped graph by reinstalling its artifacts."""
+    console.print(f"Starting graph [cyan]'{name}'[/cyan]...", style="green")
+    try:
+        with ctx.db_session() as session:
+            graph_service.start_graph(ctx.core_context, session, name)
+        console.print(f"[green]Graph '{name}' started successfully.[/green]")
+    except Exception as e:
+        console.print(f"[bold red]Error starting graph:[/] {e}")
+        sys.exit(1)
 
 
 #
