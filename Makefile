@@ -10,6 +10,7 @@ help:
 test:
 	pytest smo-core
 	pytest smo-cli
+	pytest smo-web
 
 
 .PHONY: lint
@@ -23,6 +24,7 @@ lint:
 clean:
 	cd smo-core && adt clean
 	cd smo-cli && adt clean
+	cd smo-web && adt clean
 	rm -rf examples/brussels-demo/*.tar.gz
 
 
@@ -31,6 +33,7 @@ clean:
 format:
 	cd smo-core && isort .
 	cd smo-cli && isort .
+	cd smo-web && isort .
 	ruff format
 
 

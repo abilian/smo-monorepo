@@ -1,7 +1,7 @@
 [project]
-name = "h3ni-smo"
+name = "smo-monorepo"
 version = "0.1.0"
-description = "Fork of SMO"
+description = "Fork of SMO as a monorepo, containing the core library, CLI, and web interface."
 authors = [
     { name = "Stefane Fermigier", email = "sf@abilian.com" },
 ]
@@ -13,6 +13,7 @@ dependencies = [
     # "hop3-agent",
     "smo-core",
     "smo-cli",
+    "smo-web",
     "invoke>=2.2.0",
 ]
 
@@ -38,6 +39,7 @@ members = ["smo-*"]
 [tool.uv.sources]
 smo-core = { workspace = true }
 smo-cli = { workspace = true }
+smo-web = { workspace = true }
 
 # ------------------------------------
 
