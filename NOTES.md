@@ -1,10 +1,10 @@
 # SMO Monorepo - Technical Notes
 
-This document provides a technical overview the codebase of the Synergetic Meta-Orchestrator (SMO) monorepo. It assumes you have already read the `README.md` files for the top-level project and the individual packages (`smo-core`, `smo-cli`, `smo-web-connexion`).
+This document provides a technical overview the codebase of the Synergetic Meta-Orchestrator (SMO) monorepo. It assumes you have already read the `README.md` files for the top-level project and the individual packages (`smo-core`, `smo-cli`, `smo-web`).
 
 ## 1. The Core-Wrapper Design Pattern
 
-The most important architectural concept is the strict separation between the headless `smo-core` library and the user-facing "wrapper" applications (`smo-cli` and `smo-web-connexion`). This is achieved through a consistent **dependency injection** and **context-passing** pattern.
+The most important architectural concept is the strict separation between the headless `smo-core` library and the user-facing "wrapper" applications (`smo-cli` and `smo-web`). This is achieved through a consistent **dependency injection** and **context-passing** pattern.
 
 ### `smo-core`: The Headless Engine
 
