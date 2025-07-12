@@ -14,6 +14,7 @@ dependencies = [
     "smo-core",
     "smo-cli",
     "smo-web",
+    "smo-sdk",
     "invoke>=2.2.0",
 ]
 
@@ -31,6 +32,7 @@ dev-dependencies = [
     "pytest-mock>=3.14.1",
     "snoop>=0.6.0",
     "devtools>=0.12.2",
+    "openapi-python-client>=0.25.2",
 ]
 
 [tool.uv.workspace]
@@ -40,6 +42,7 @@ members = ["smo-*"]
 smo-core = { workspace = true }
 smo-cli = { workspace = true }
 smo-web = { workspace = true }
+smo-sdk = { workspace = true }
 
 # ------------------------------------
 
