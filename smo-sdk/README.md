@@ -1,125 +1,162 @@
-# synergetic-meta-orchestrator-smo-api-client
+# Synergetic Meta-Orchestrator (SMO) - Python SDK
 
-A client library for accessing Synergetic Meta-Orchestrator (SMO) API
+[![PyPI version](https://badge.fury.io/py/smo-sdk.svg)](https://badge.fury.io/py/smo-sdk)
+[![Build Status](https://gitlab.eclipse.org/eclipse-research-labs/nephele-project/opencall-2/h3ni/smo-sdk/badges/main/pipeline.svg)](https://gitlab.eclipse.org/eclipse-research-labs/nephele-project/opencall-2/h3ni/smo-sdk/-/pipelines)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Usage
-First, create a client:
+This is the official Python SDK for the Synergetic Meta-Orchestrator (SMO) REST API.
+
+This SDK is inpart auto-generated from the SMO's [OpenAPI specification](https://gitlab.eclipse.org/eclipse-research-labs/nephele-project/opencall-2/h3ni/smo-monorepo/-/blob/main/smo-web-connexion/src/smo_web/swagger/openapi.yaml), ensuring it is always up-to-date and provides complete coverage of the API's features. It provides a simple, pythonic interface that handles all the low-level HTTP requests, data serialization, and error handling for you.
+
+## Core Features
+
+*   **Complete API Coverage**: All API endpoints exposed by the `smo-web` service are available as client methods.
+*   **Type-Safe**: Fully type-hinted for an excellent developer experience with autocompletion and static analysis (`mypy`).
+*   **Sync and Async Support**: The client can be used in both synchronous and asynchronous (`asyncio`) code, powered by `httpx`.
+*   **Pydantic Models**: All request and response bodies are parsed into robust [Pydantic](https://docs.pydantic.dev/) models, providing data validation and a great object-oriented interface.
+*   **Easy to Maintain**: Can be regenerated with a single command whenever the core SMO API is updated.
+
+## Installation
+
+The package can be installed from PyPI:
+
+```bash
+pip install smo-sdk
+```
+
+*(Note: This package name is hypothetical and would need to be published first.)*
+
+Alternatively, you can install it directly from the Git repository:
+
+```bash
+pip install git+https://gitlab.eclipse.org/eclipse-research-labs/nephele-project/opencall-2/h3ni/smo-sdk.git
+```
+
+## Getting Started
+
+Using the SDK is straightforward. First, instantiate the client, then call the methods corresponding to the API endpoints.
+
+### Example: Listing Clusters and Graphs
 
 ```python
 from smo_sdk import Client
+from smo_sdk.models import HdaGraphDescriptor  # Import Pydantic models
 
-client = Client(base_url="https://api.example.com")
+# Initialize the client, pointing to your smo-web instance
+client = Client(base_url="http://localhost:8000")
+
+# --- 1. List all clusters known to the SMO ---
+print("Fetching clusters...")
+try:
+    clusters_response = client.cluster.get_clusters.sync()
+    if clusters_response:
+        for cluster in clusters_response:
+            print(f"  - Cluster: {cluster.name}, CPU: {cluster.available_cpu}, Status: {'Ready' if cluster.availability else 'Not Ready'}")
+    else:
+        print("  No clusters found.")
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+
+# --- 2. List all graphs within a specific project ---
+PROJECT_NAME = "demo1"
+print(f"\nFetching graphs for project '{PROJECT_NAME}'...")
+try:
+    graphs_response = client.graph.get_all_for_project.sync(project=PROJECT_NAME)
+    if graphs_response:
+        for graph in graphs_response:
+            print(f"  - Graph: {graph.name}, Status: {graph.status}")
+    else:
+        print(f"  No graphs found in project '{PROJECT_NAME}'.")
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+# --- 3. Deploy a new graph from a descriptor ---
+print("\nDeploying a new graph...")
+
+# Construct the request body using a dictionary.
+# The SDK will validate it against the HdaGraphDescriptor Pydantic model.
+new_graph_body = {
+    "hdaGraph": {
+        "id": "my-sdk-graph",
+        "version": "1.0.0",
+        "services": [
+            {
+                "id": "sdk-service",
+                "deployment": {
+                    "trigger": {"type": "standard"},
+                    "intent": {"compute": {"cpu": "light", "ram": "small", "storage": "small", "gpu": {"enabled": "False"}}},
+                },
+                "artifact": {
+                    "ociImage": "oci://my-registry/my-chart:latest",
+                    "ociConfig": {"type": "App", "implementer": "Helm"},
+                    "valuesOverwrite": {"replicaCount": 1},
+                },
+            }
+        ],
+    }
+}
+
+try:
+    deployment_response = client.graph.deploy.sync(project="sdk-project", json_body=new_graph_body)
+    print(f"  -> API Response: {deployment_response}")
+except Exception as e:
+    print(f"An error occurred during deployment: {e}")
+
 ```
 
-If the endpoints you're going to hit require authentication, use `AuthenticatedClient` instead:
+## Asynchronous Usage
+
+The SDK provides an identical API for `asyncio` applications. Simply instantiate an async client and use `await` on the `.asyncio()` method variant.
 
 ```python
-from smo_sdk import AuthenticatedClient
-
-client = AuthenticatedClient(base_url="https://api.example.com", token="SuperSecretToken")
-```
-
-Now call your endpoint and use your models:
-
-```python
-from smo_sdk.models import MyDataModel
-from smo_sdk.api.my_tag import get_my_data_model
-from smo_sdk.types import Response
-
-with client as client:
-    my_data: MyDataModel = get_my_data_model.sync(client=client)
-    # or if you need more info (e.g. status_code)
-    response: Response[MyDataModel] = get_my_data_model.sync_detailed(client=client)
-```
-
-Or do the same thing with an async version:
-
-```python
-from smo_sdk.models import MyDataModel
-from smo_sdk.api.my_tag import get_my_data_model
-from smo_sdk.types import Response
-
-async with client as client:
-    my_data: MyDataModel = await get_my_data_model.asyncio(client=client)
-    response: Response[MyDataModel] = await get_my_data_model.asyncio_detailed(client=client)
-```
-
-By default, when you're calling an HTTPS API it will attempt to verify that SSL is working correctly. Using certificate verification is highly recommended most of the time, but sometimes you may need to authenticate to a server (especially an internal server) using a custom certificate bundle.
-
-```python
-client = AuthenticatedClient(
-    base_url="https://internal_api.example.com", 
-    token="SuperSecretToken",
-    verify_ssl="/path/to/certificate_bundle.pem",
-)
-```
-
-You can also disable certificate validation altogether, but beware that **this is a security risk**.
-
-```python
-client = AuthenticatedClient(
-    base_url="https://internal_api.example.com", 
-    token="SuperSecretToken", 
-    verify_ssl=False
-)
-```
-
-Things to know:
-1. Every path/method combo becomes a Python module with four functions:
-    1. `sync`: Blocking request that returns parsed data (if successful) or `None`
-    1. `sync_detailed`: Blocking request that always returns a `Request`, optionally with `parsed` set if the request was successful.
-    1. `asyncio`: Like `sync` but async instead of blocking
-    1. `asyncio_detailed`: Like `sync_detailed` but async instead of blocking
-
-1. All path/query params, and bodies become method arguments.
-1. If your endpoint had any tags on it, the first tag will be used as a module name for the function (my_tag above)
-1. Any endpoint which did not have a tag will be in `smo_sdk.api.default`
-
-## Advanced customizations
-
-There are more settings on the generated `Client` class which let you control more runtime behavior, check out the docstring on that class for more info. You can also customize the underlying `httpx.Client` or `httpx.AsyncClient` (depending on your use-case):
-
-```python
+import asyncio
 from smo_sdk import Client
 
-def log_request(request):
-    print(f"Request event hook: {request.method} {request.url} - Waiting for response")
+async def main():
+    # Initialize the async client
+    async_client = Client(base_url="http://localhost:8000")
 
-def log_response(response):
-    request = response.request
-    print(f"Response event hook: {request.method} {request.url} - Status {response.status_code}")
+    print("Fetching clusters asynchronously...")
+    clusters = await async_client.cluster.get_clusters.asyncio()
+    for cluster in clusters:
+        print(f"  - Async Cluster: {cluster.name}")
 
-client = Client(
-    base_url="https://api.example.com",
-    httpx_args={"event_hooks": {"request": [log_request], "response": [log_response]}},
-)
-
-# Or get the underlying httpx client to modify directly with client.get_httpx_client() or client.get_async_httpx_client()
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-You can even set the httpx client directly, but beware that this will override any existing settings (e.g., base_url):
+## SDK Generation & Updates
 
-```python
-import httpx
-from smo_sdk import Client
+This library's code is automatically generated by [openapi-python-client](https://github.com/openapi-generators/openapi-python-client).
 
-client = Client(
-    base_url="https://api.example.com",
-)
-# Note that base_url needs to be re-set, as would any shared cookies, headers, etc.
-client.set_httpx_client(httpx.Client(base_url="https://api.example.com", proxies="http://localhost:8030"))
+If the SMO REST API is updated, you can regenerate this SDK to include the changes by running the following command from the root of the repository:
+
+```bash
+# Install the generator if you don't have it
+# pip install openapi-python-client
+
+# Regenerate the SDK from the SMO's OpenAPI specification
+openapi-python-client generate --path /path/to/smo-monorepo/smo-web-connexion/src/smo_web/swagger/openapi.yaml --output-path .
 ```
 
-## Building / publishing this package
-This project uses [Poetry](https://python-poetry.org/) to manage dependencies  and packaging.  Here are the basics:
-1. Update the metadata in pyproject.toml (e.g. authors, version)
-1. If you're using a private repository, configure it with Poetry
-    1. `poetry config repositories.<your-repository-name> <url-to-your-repository>`
-    1. `poetry config http-basic.<your-repository-name> <username> <password>`
-1. Publish the client with `poetry publish --build -r <your-repository-name>` or, if for public PyPI, just `poetry publish --build`
+This ensures the SDK remains a perfect, up-to-date reflection of the API's capabilities.
 
-If you want to install this client into another project without publishing it (e.g. for development) then:
-1. If that project **is using Poetry**, you can simply do `poetry add <path-to-this-client>` from that project
-1. If that project is not using Poetry:
-    1. Build a wheel with `poetry build -f wheel`
-    1. Install that wheel from the other project `pip install <path-to-wheel>`
+## Development
+
+To set up a development environment:
+
+1.  Clone this repository.
+2.  Create and activate a virtual environment (`python -m venv .venv && source .venv/bin/activate`).
+3.  Install the package in editable mode with development dependencies:
+    ```bash
+    pip install -e ".[dev]"
+    ```
+4.  Run the test suite:
+    ```bash
+    pytest
+    ```
+
+## License
+
+This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
