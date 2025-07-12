@@ -1,8 +1,8 @@
-# Synergetic Meta-Orchestrator (SMO)
+# Synergetic Meta-Orchestrator (SMO) - H3NI Refactoring
 
 The Synergetic Meta-Orchestrator (SMO) is an advanced, intent-driven control plane for deploying, managing, and optimizing complex, multi-component applications across distributed Kubernetes environments.
 
-This repository contains the full source code for the SMO project, refactored into a modular monorepo structure, with additional CLI capacities.
+This repository contains the full source code for the SMO project, **refactored into a modular monorepo structure, with additional CLI capacities.**
 
 
 ## Core Features
@@ -22,8 +22,10 @@ This monorepo is structured into three distinct Python packages, creating a clea
 
 2.  **`smo-cli`**: A powerful command-line interface for interacting with the SMO engine. It provides a direct, scriptable way to manage the entire lifecycle of HDAGs. It depends on `smo-core`.
 
-3.  **`smo-web-connexion`**: A modern, API-first web service built with [Connexion](https://connexion.readthedocs.io/). It exposes the SMO's functionality via a REST API defined in an OpenAPI (YAML) specification, complete with an interactive Swagger UI. It also depends on `smo-core`.
+3.  **`smo-web`**: A modern, API-first web service built with [Connexion](https://connexion.readthedocs.io/). It exposes the SMO's functionality via a REST API defined in an OpenAPI (YAML) specification, complete with an interactive Swagger UI. It also depends on `smo-core`.
 
+=> [Additional technical details and implementation notes can be found in the `NOTES.md` file.](./NOTES.md)
+=> [TODO items and future work are tracked in the `TODO.md` file.](./TODO.md)
 
 ### Dependency Graph
 
