@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Optional, Union
+from typing import Any
 
 import httpx
 
@@ -20,8 +20,8 @@ def _get_kwargs() -> dict[str, Any]:
 
 
 def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Problem, list["Cluster"]]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Problem | list["Cluster"] | None:
     if response.status_code == 200:
         response_200 = []
         _response_200 = response.json()
@@ -42,8 +42,8 @@ def _parse_response(
 
 
 def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Problem, list["Cluster"]]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[Problem | list["Cluster"]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -54,8 +54,8 @@ def _build_response(
 
 def sync_detailed(
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Response[Union[Problem, list["Cluster"]]]:
+    client: AuthenticatedClient | Client,
+) -> Response[Problem | list["Cluster"]]:
     """Fetches all known clusters
 
      Retrieves cluster information from the SMO's database, which is synced from Karmada.
@@ -79,8 +79,8 @@ def sync_detailed(
 
 def sync(
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Optional[Union[Problem, list["Cluster"]]]:
+    client: AuthenticatedClient | Client,
+) -> Problem | list["Cluster"] | None:
     """Fetches all known clusters
 
      Retrieves cluster information from the SMO's database, which is synced from Karmada.
@@ -100,8 +100,8 @@ def sync(
 
 async def asyncio_detailed(
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Response[Union[Problem, list["Cluster"]]]:
+    client: AuthenticatedClient | Client,
+) -> Response[Problem | list["Cluster"]]:
     """Fetches all known clusters
 
      Retrieves cluster information from the SMO's database, which is synced from Karmada.
@@ -123,8 +123,8 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Optional[Union[Problem, list["Cluster"]]]:
+    client: AuthenticatedClient | Client,
+) -> Problem | list["Cluster"] | None:
     """Fetches all known clusters
 
      Retrieves cluster information from the SMO's database, which is synced from Karmada.

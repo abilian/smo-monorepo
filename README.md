@@ -24,7 +24,10 @@ This monorepo is structured into three distinct Python packages, creating a clea
 
 3.  **`smo-web`**: A modern, API-first web service built with [Connexion](https://connexion.readthedocs.io/). It exposes the SMO's functionality via a REST API defined in an OpenAPI (YAML) specification, complete with an interactive Swagger UI. It also depends on `smo-core`.
 
+4. **`smo-sdk`**: A Python SDK, auto-generated from the smo-web OpenAPI specification. It provides a convenient, type-safe, and pythonic way to interact with the SMO REST API from other applications, tests, or scripts. It supports both synchronous and asynchronous operations. This is still experimental and used mostly as a debugging tool.
+
 => [Additional technical details and implementation notes can be found in the `NOTES.md` file.](./NOTES.md)
+
 => [TODO items and future work are tracked in the `TODO.md` file.](./TODO.md)
 
 ### Dependency Graph

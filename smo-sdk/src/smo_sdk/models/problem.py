@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,11 +20,11 @@ class Problem:
         instance (Union[Unset, str]):
     """
 
-    type_: Union[Unset, str] = UNSET
-    title: Union[Unset, str] = UNSET
-    status: Union[Unset, int] = UNSET
-    detail: Union[Unset, str] = UNSET
-    instance: Union[Unset, str] = UNSET
+    type_: Unset | str = UNSET
+    title: Unset | str = UNSET
+    status: Unset | int = UNSET
+    detail: Unset | str = UNSET
+    instance: Unset | str = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:

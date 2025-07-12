@@ -1,12 +1,14 @@
 from http import HTTPStatus
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.problem import Problem
-from ...models.smo_web_handlers_graph_deploy_json_body import SmoWebHandlersGraphDeployJsonBody
+from ...models.smo_web_handlers_graph_deploy_json_body import (
+    SmoWebHandlersGraphDeployJsonBody,
+)
 from ...types import Response
 
 
@@ -31,8 +33,8 @@ def _get_kwargs(
 
 
 def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, Problem]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Any | Problem | None:
     if response.status_code == 202:
         response_202 = cast(Any, None)
         return response_202
@@ -47,8 +49,8 @@ def _parse_response(
 
 
 def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, Problem]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[Any | Problem]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -60,9 +62,9 @@ def _build_response(
 def sync_detailed(
     project: str,
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: SmoWebHandlersGraphDeployJsonBody,
-) -> Response[Union[Any, Problem]]:
+) -> Response[Any | Problem]:
     """Deploy a new HDAG
 
      Deploys a Hyper Distributed Application Graph from a descriptor.
@@ -94,9 +96,9 @@ def sync_detailed(
 def sync(
     project: str,
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: SmoWebHandlersGraphDeployJsonBody,
-) -> Optional[Union[Any, Problem]]:
+) -> Any | Problem | None:
     """Deploy a new HDAG
 
      Deploys a Hyper Distributed Application Graph from a descriptor.
@@ -123,9 +125,9 @@ def sync(
 async def asyncio_detailed(
     project: str,
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: SmoWebHandlersGraphDeployJsonBody,
-) -> Response[Union[Any, Problem]]:
+) -> Response[Any | Problem]:
     """Deploy a new HDAG
 
      Deploys a Hyper Distributed Application Graph from a descriptor.
@@ -155,9 +157,9 @@ async def asyncio_detailed(
 async def asyncio(
     project: str,
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: SmoWebHandlersGraphDeployJsonBody,
-) -> Optional[Union[Any, Problem]]:
+) -> Any | Problem | None:
     """Deploy a new HDAG
 
      Deploys a Hyper Distributed Application Graph from a descriptor.

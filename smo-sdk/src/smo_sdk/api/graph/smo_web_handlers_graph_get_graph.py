@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Optional, Union
+from typing import Any
 
 import httpx
 
@@ -22,8 +22,8 @@ def _get_kwargs(
 
 
 def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Graph, Problem]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Graph | Problem | None:
     if response.status_code == 200:
         response_200 = Graph.from_dict(response.json())
 
@@ -39,8 +39,8 @@ def _parse_response(
 
 
 def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Graph, Problem]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[Graph | Problem]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -52,8 +52,8 @@ def _build_response(
 def sync_detailed(
     name: str,
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Response[Union[Graph, Problem]]:
+    client: AuthenticatedClient | Client,
+) -> Response[Graph | Problem]:
     """Get a specific graph
 
     Args:
@@ -81,8 +81,8 @@ def sync_detailed(
 def sync(
     name: str,
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Optional[Union[Graph, Problem]]:
+    client: AuthenticatedClient | Client,
+) -> Graph | Problem | None:
     """Get a specific graph
 
     Args:
@@ -105,8 +105,8 @@ def sync(
 async def asyncio_detailed(
     name: str,
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Response[Union[Graph, Problem]]:
+    client: AuthenticatedClient | Client,
+) -> Response[Graph | Problem]:
     """Get a specific graph
 
     Args:
@@ -132,8 +132,8 @@ async def asyncio_detailed(
 async def asyncio(
     name: str,
     *,
-    client: Union[AuthenticatedClient, Client],
-) -> Optional[Union[Graph, Problem]]:
+    client: AuthenticatedClient | Client,
+) -> Graph | Problem | None:
     """Get a specific graph
 
     Args:

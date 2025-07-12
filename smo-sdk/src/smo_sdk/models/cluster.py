@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -19,10 +19,10 @@ class Cluster:
         availability (Union[Unset, bool]):
     """
 
-    name: Union[Unset, str] = UNSET
-    available_cpu: Union[Unset, float] = UNSET
-    available_ram: Union[Unset, str] = UNSET
-    availability: Union[Unset, bool] = UNSET
+    name: Unset | str = UNSET
+    available_cpu: Unset | float = UNSET
+    available_ram: Unset | str = UNSET
+    availability: Unset | bool = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:

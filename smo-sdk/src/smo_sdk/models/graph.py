@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, Union
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -23,10 +23,10 @@ class Graph:
         services (Union[Unset, list['GraphServicesItem']]):
     """
 
-    name: Union[Unset, str] = UNSET
-    project: Union[Unset, str] = UNSET
-    status: Union[Unset, str] = UNSET
-    services: Union[Unset, list["GraphServicesItem"]] = UNSET
+    name: Unset | str = UNSET
+    project: Unset | str = UNSET
+    status: Unset | str = UNSET
+    services: Unset | list["GraphServicesItem"] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -36,7 +36,7 @@ class Graph:
 
         status = self.status
 
-        services: Union[Unset, list[dict[str, Any]]] = UNSET
+        services: Unset | list[dict[str, Any]] = UNSET
         if not isinstance(self.services, Unset):
             services = []
             for services_item_data in self.services:
