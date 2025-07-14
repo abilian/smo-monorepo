@@ -3,6 +3,7 @@ import click
 from .commands.cluster import cluster
 from .commands.graph import graph
 from .commands.init import init
+from .commands.scaler import scaler
 
 
 @click.group()
@@ -16,3 +17,4 @@ def main():
 main.add_command(init)
 main.add_command(cluster)
 main.add_command(graph)
+main.add_command(scaler)
