@@ -11,6 +11,7 @@ from rich.table import Table
 from smo_cli.core.context import CliContext, pass_context
 from smo_core.models.hdag.graph import Graph
 from smo_core.services.hdag import graph_service
+from .exceptions import CliException
 
 console = Console()
 
@@ -82,11 +83,12 @@ def describe(ctx: CliContext, name: str):
     with ctx.db_session() as session:
         graph_obj = graph_service.fetch_graph(session, name)
 
-    if not graph_obj:
-        console.print(f"Graph [bold red]'{name}'[/bold red] not found.")
-        return
+        if not graph_obj:
+            msg = f"Graph '{name}' not found."
+            raise CliException(msg)
 
-    g = graph_obj.to_dict()
+        g = graph_obj.to_dict()
+
     panel_content = (
         f"[bold cyan]Name:[/] {g['name']}\n"
         f"[bold magenta]Project:[/] {g['project']}\n"

@@ -1,4 +1,5 @@
 import sys
+import traceback
 from dataclasses import dataclass
 from functools import update_wrapper
 
@@ -87,7 +88,10 @@ def pass_context(f):
         try:
             return ctx.invoke(f, cli_ctx, *args, **kwargs)
         except Exception as e:
-            print("[bold red]An error occurred:[/]", e)
+            console.print("[bold red]An error occurred:[/]", e)
+            print()
+            print("Additional information:")
+            traceback.print_exc()
             sys.exit(1)
 
     return update_wrapper(new_func, f)
