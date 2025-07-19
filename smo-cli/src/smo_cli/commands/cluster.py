@@ -1,4 +1,3 @@
-import sys
 from typing import Iterable
 
 import click
@@ -23,12 +22,8 @@ def cluster():
 def sync(ctx: CliContext):
     """Fetches cluster info from Karmada and syncs with the local DB."""
     console.print("Syncing cluster information from Karmada...", style="cyan")
-    try:
-        with ctx.db_session() as session:
-            clusters = cluster_service.fetch_clusters(ctx.core_context, session)
-    except Exception as e:
-        console.print(f"[bold red]Error syncing clusters:[/] {e}")
-        sys.exit(1)
+    with ctx.db_session() as session:
+        clusters = cluster_service.fetch_clusters(ctx.core_context, session)
 
     console.print(f"[green]Successfully synced {len(clusters)} cluster(s).[/green]")
     show_clusters(clusters)
@@ -38,20 +33,16 @@ def sync(ctx: CliContext):
 @pass_context
 def list_clusters(ctx: CliContext):
     """Lists all clusters known to SMO-CLI from the local DB."""
-    try:
-        with ctx.db_session() as session:
-            clusters = session.query(Cluster).all()
+    with ctx.db_session() as session:
+        clusters = session.query(Cluster).all()
 
-        if not clusters:
-            console.print(
-                "No clusters found. Run 'smo-cli cluster sync' first.", style="yellow"
-            )
-            return
+    if not clusters:
+        console.print(
+            "No clusters found. Run 'smo-cli cluster sync' first.", style="yellow"
+        )
+        return
 
-        show_clusters(clusters)
-    except Exception as e:
-        console.print(f"[bold red]Error listing clusters:[/] {e}")
-        sys.exit(1)
+    show_clusters(clusters)
 
 
 def show_clusters(clusters: Iterable[Cluster | dict]):

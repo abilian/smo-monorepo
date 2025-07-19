@@ -1,5 +1,4 @@
 import sys
-import traceback
 from typing import Iterable
 
 import click
@@ -31,28 +30,23 @@ def deploy(ctx: CliContext, descriptor: str, project: str):
     console.print(
         f"Deploying graph from [cyan]'{descriptor}'[/cyan] into project [magenta]'{project}'[/magenta]..."
     )
-    try:
-        graph_data = get_graph_data(descriptor)
+    graph_data = get_graph_data(descriptor)
 
-        if not graph_data or "hdaGraph" not in graph_data:
-            console.print(
-                "[bold red]Error:[/] Invalid HDAG descriptor format.", style="red"
-            )
-            sys.exit(1)
-
-        with ctx.db_session() as session:
-            graph_service.deploy_graph(
-                ctx.core_context, session, project, graph_data["hdaGraph"]
-            )
-
+    if not graph_data or "hdaGraph" not in graph_data:
         console.print(
-            f"[green]Successfully triggered deployment for graph '{graph_data['hdaGraph']['id']}'.[/green]"
+            "[bold red]Error:[/] Invalid HDAG descriptor format.", style="red"
         )
-        console.print("Use 'smo-cli graph list' to check status.")
-    except Exception as e:
-        console.print(f"[bold red]Error during deployment:[/] {e}")
-        traceback.print_exc()
         sys.exit(1)
+
+    with ctx.db_session() as session:
+        graph_service.deploy_graph(
+            ctx.core_context, session, project, graph_data["hdaGraph"]
+        )
+
+    console.print(
+        f"[green]Successfully triggered deployment for graph '{graph_data['hdaGraph']['id']}'.[/green]"
+    )
+    console.print("Use 'smo-cli graph list' to check status.")
 
 
 @graph.command(name="list")
@@ -85,42 +79,36 @@ def list_graphs(ctx: CliContext, project: str):
 @pass_context
 def describe(ctx: CliContext, name: str):
     """Shows detailed information for a specific graph."""
-    try:
-        with ctx.db_session() as session:
-            graph_obj = graph_service.fetch_graph(session, name)
+    with ctx.db_session() as session:
+        graph_obj = graph_service.fetch_graph(session, name)
 
-        if not graph_obj:
-            console.print(f"Graph [bold red]'{name}'[/bold red] not found.")
-            return
+    if not graph_obj:
+        console.print(f"Graph [bold red]'{name}'[/bold red] not found.")
+        return
 
-        g = graph_obj.to_dict()
-        panel_content = (
-            f"[bold cyan]Name:[/] {g['name']}\n"
-            f"[bold magenta]Project:[/] {g['project']}\n"
-            f"[bold yellow]Status:[/] {g['status']}\n"
-            f"[bold blue]Grafana:[/] {g.get('grafana', 'N/A')}"
-        )
+    g = graph_obj.to_dict()
+    panel_content = (
+        f"[bold cyan]Name:[/] {g['name']}\n"
+        f"[bold magenta]Project:[/] {g['project']}\n"
+        f"[bold yellow]Status:[/] {g['status']}\n"
+        f"[bold blue]Grafana:[/] {g.get('grafana', 'N/A')}"
+    )
+    console.print(
+        Panel(panel_content, title="Graph Details", border_style="green", expand=False)
+    )
+
+    if services := g.get("services"):
+        show_services(services)
+
+    if hda_graph := g.get("hdaGraph"):
+        yaml_content = yaml.dump(hda_graph)
         console.print(
             Panel(
-                panel_content, title="Graph Details", border_style="green", expand=False
+                Syntax(yaml_content, "yaml", theme="monokai"),
+                title="HDAG Descriptor",
+                border_style="blue",
             )
         )
-
-        if services := g.get("services"):
-            show_services(services)
-
-        if hda_graph := g.get("hdaGraph"):
-            yaml_content = yaml.dump(hda_graph)
-            console.print(
-                Panel(
-                    Syntax(yaml_content, "yaml", theme="monokai"),
-                    title="HDAG Descriptor",
-                    border_style="blue",
-                )
-            )
-    except Exception as e:
-        console.print(f"[bold red]Error describing graph:[/] {e}")
-        raise
 
 
 @graph.command()
@@ -136,13 +124,11 @@ def remove(ctx: CliContext, name: str):
         return
 
     console.print(f"Removing graph [cyan]'{name}'[/cyan]...", style="red")
-    try:
-        with ctx.db_session() as session:
-            graph_service.remove_graph(ctx.core_context, session, name)
-        console.print(f"[green]Graph '{name}' removed successfully.[/green]")
-    except Exception as e:
-        console.print(f"[bold red]Error removing graph:[/] {e}")
-        sys.exit(1)
+
+    with ctx.db_session() as session:
+        graph_service.remove_graph(ctx.core_context, session, name)
+
+    console.print(f"[green]Graph '{name}' removed successfully.[/green]")
 
 
 @graph.command(name="re-place")
@@ -153,16 +139,13 @@ def re_place(ctx: CliContext, name: str):
     console.print(
         f"Triggering re-placement for graph [cyan]'{name}'[/cyan]...", style="cyan"
     )
-    try:
-        with ctx.db_session() as session:
-            graph_service.trigger_placement(ctx.core_context, session, name)
-        console.print(
-            f"[green]Re-placement for graph '{name}' completed successfully.[/green]"
-        )
-        console.print("Check new placement with 'smo-cli graph describe'.")
-    except Exception as e:
-        console.print(f"[bold red]Error during re-placement:[/] {e}")
-        sys.exit(1)
+    with ctx.db_session() as session:
+        graph_service.trigger_placement(ctx.core_context, session, name)
+
+    console.print(
+        f"[green]Re-placement for graph '{name}' completed successfully.[/green]"
+    )
+    console.print("Check new placement with 'smo-cli graph describe'.")
 
 
 @graph.command()
@@ -178,13 +161,9 @@ def stop(ctx: CliContext, name: str):
         return
 
     console.print(f"Stopping graph [cyan]'{name}'[/cyan]...", style="yellow")
-    try:
-        with ctx.db_session() as session:
-            graph_service.stop_graph(ctx.core_context, session, name)
-        console.print(f"[green]Graph '{name}' stopped successfully.[/green]")
-    except Exception as e:
-        console.print(f"[bold red]Error stopping graph:[/] {e}")
-        sys.exit(1)
+    with ctx.db_session() as session:
+        graph_service.stop_graph(ctx.core_context, session, name)
+    console.print(f"[green]Graph '{name}' stopped successfully.[/green]")
 
 
 @graph.command()
@@ -193,13 +172,9 @@ def stop(ctx: CliContext, name: str):
 def start(ctx: CliContext, name: str):
     """Starts a stopped graph by reinstalling its artifacts."""
     console.print(f"Starting graph [cyan]'{name}'[/cyan]...", style="green")
-    try:
-        with ctx.db_session() as session:
-            graph_service.start_graph(ctx.core_context, session, name)
-        console.print(f"[green]Graph '{name}' started successfully.[/green]")
-    except Exception as e:
-        console.print(f"[bold red]Error starting graph:[/] {e}")
-        sys.exit(1)
+    with ctx.db_session() as session:
+        graph_service.start_graph(ctx.core_context, session, name)
+    console.print(f"[green]Graph '{name}' started successfully.[/green]")
 
 
 #

@@ -1,3 +1,4 @@
+import sys
 from dataclasses import dataclass
 from functools import update_wrapper
 
@@ -78,12 +79,16 @@ class CliContext:
 
 
 def pass_context(f):
-    """A custom decorator that passes the CliContext object to the command."""
+    """A custom decorator that passes the CliContext object to the command and deals with exceptions."""
 
     @click.pass_context
     def new_func(ctx, *args, **kwargs):
         cli_ctx = get_context()
-        return ctx.invoke(f, cli_ctx, *args, **kwargs)
+        try:
+            return ctx.invoke(f, cli_ctx, *args, **kwargs)
+        except Exception as e:
+            print("[bold red]An error occurred:[/]", e)
+            sys.exit(1)
 
     return update_wrapper(new_func, f)
 

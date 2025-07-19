@@ -75,45 +75,39 @@ def run(
     last_scale_time = 0
 
     while True:
-        try:
-            now = time.time()
-            if (now - last_scale_time) < cooldown_period:
-                console.print(
-                    f"In cooldown period. Waiting for {cooldown_period - (now - last_scale_time):.0f} more seconds.",
-                    style="dim",
-                )
-            else:
-                # Ensure context is active if needed, though this service doesn't use DB
-                with ctx.db_session():
-                    result = scaler_service.run_threshold_scaler_iteration(
-                        karmada=ctx.core_context.karmada,
-                        prometheus=ctx.core_context.prometheus,
-                        target_deployment=target_deployment,
-                        target_namespace=target_namespace,
-                        scale_up_threshold=up_threshold,
-                        scale_down_threshold=down_threshold,
-                        scale_up_replicas=up_replicas,
-                        scale_down_replicas=down_replicas,
-                    )
-
-                action = result.get("action")
-                if action in ("scale_up", "scale_down"):
-                    console.print(
-                        f"[bold green]SCALING ACTION TAKEN:[/] {result['reason']}"
-                    )
-                    last_scale_time = time.time()
-                elif action == "none":
-                    console.print(
-                        f"No action needed. Replicas: {result.get('current_replicas')}, Rate: {result.get('request_rate', 0):.2f} RPS"
-                    )
-                else:  # error
-                    console.print(
-                        f"[bold red]Error in scaling iteration:[/] {result.get('reason')}"
-                    )
-
-        except Exception as e:
+        now = time.time()
+        if (now - last_scale_time) < cooldown_period:
             console.print(
-                f"[bold red]An unexpected error occurred in the scaler loop:[/] {e}"
+                f"In cooldown period. Waiting for {cooldown_period - (now - last_scale_time):.0f} more seconds.",
+                style="dim",
             )
+        else:
+            # Ensure context is active if needed, though this service doesn't use DB
+            with ctx.db_session():
+                result = scaler_service.run_threshold_scaler_iteration(
+                    karmada=ctx.core_context.karmada,
+                    prometheus=ctx.core_context.prometheus,
+                    target_deployment=target_deployment,
+                    target_namespace=target_namespace,
+                    scale_up_threshold=up_threshold,
+                    scale_down_threshold=down_threshold,
+                    scale_up_replicas=up_replicas,
+                    scale_down_replicas=down_replicas,
+                )
+
+            action = result.get("action")
+            if action in ("scale_up", "scale_down"):
+                console.print(
+                    f"[bold green]SCALING ACTION TAKEN:[/] {result['reason']}"
+                )
+                last_scale_time = time.time()
+            elif action == "none":
+                console.print(
+                    f"No action needed. Replicas: {result.get('current_replicas')}, Rate: {result.get('request_rate', 0):.2f} RPS"
+                )
+            else:  # error
+                console.print(
+                    f"[bold red]Error in scaling iteration:[/] {result.get('reason')}"
+                )
 
         time.sleep(poll_interval)

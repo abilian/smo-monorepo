@@ -126,7 +126,7 @@ def calculate_naive_placement(
 
     Return value
     ---
-    placement: 2D List of placement. If the element at index [i][j] is 1
+    2D List of placement. If the element at index [i][j] is 1
                it means that service i is placed at cluster j
     """
 
