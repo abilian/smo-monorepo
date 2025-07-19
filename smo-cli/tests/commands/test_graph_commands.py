@@ -95,7 +95,7 @@ def test_graph_remove_abort(runner, tmp_smo_dir, mock_graph_service):
     )
 
     assert result.exit_code == 1  # Abort raises an exit code
-    assert "Aborted!" in result.output
+    assert "aborted" in result.output
 
     # Ensure the core service function was NOT called
     mock_graph_service.remove_graph.assert_not_called()

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import update_wrapper
 
 import click
+from click import Abort
 from rich.console import Console
 
 from smo_core.context import SmoCoreContext
@@ -87,6 +88,10 @@ def pass_context(f):
         cli_ctx = get_context()
         try:
             return ctx.invoke(f, cli_ctx, *args, **kwargs)
+        except Abort:
+            # Handle click.Abort exceptions gracefully
+            console.print("[bold red]Command aborted by user.[/]")
+            sys.exit(1)
         except Exception as e:
             console.print("[bold red]An error occurred:[/]", e)
             print()
