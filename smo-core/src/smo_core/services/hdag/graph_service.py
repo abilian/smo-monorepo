@@ -2,6 +2,7 @@
 
 import tempfile
 from os import path, walk
+from pathlib import Path
 
 import yaml
 from sqlalchemy.orm.session import Session
@@ -305,11 +306,13 @@ def get_graph_from_artifact(artifact_ref):
         result = run_hdarctl("pull", artifact_ref, "--untar", "--destination", dirpath)
         print(result)
 
-        for root, _, files in walk(dirpath):
-            for file in files:
-                if file.endswith((".yaml", ".yml")):
-                    with open(path.join(root, file), "r") as yaml_file:
-                        return yaml.safe_load(yaml_file)
+        for yaml_file_path in Path(dirpath).rglob("*.yml"):
+            with open(yaml_file_path, "r") as yaml_file:
+                return yaml.safe_load(yaml_file)
+
+        for yaml_file_path in Path(dirpath).rglob("*.yaml"):
+            with open(yaml_file_path, "r") as yaml_file:
+                return yaml.safe_load(yaml_file)
 
     raise FileNotFoundError("No YAML descriptor found in artifact.")
 
@@ -389,6 +392,9 @@ def create_alert(event_id, prom_query, grace_period, description, name) -> dict:
     }
 
 
+#
+# Example usage - not used in production code
+#
 def run_scaling_iteration(context, db_session, name):
     """Performs a single, synchronous scaling decision."""
     graph = fetch_graph(db_session, name)
