@@ -1,6 +1,6 @@
 [project]
 name = "smo-web"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Connexion-based web interface for the Synergetic Meta-Orchestrator."
 readme = "readme.md"
 requires-python = ">=3.12"
