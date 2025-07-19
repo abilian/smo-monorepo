@@ -1,5 +1,6 @@
 """Application graph deployment business logic."""
 
+import os
 import tempfile
 from pathlib import Path
 
@@ -345,8 +346,6 @@ def helm_install_artifact(
     print(f"Running helm {command} for service {name}...")
     result = run_helm(*args)
     print(result)
-    import os
-
     os.remove(values_filename)
 
 
