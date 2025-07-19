@@ -1,3 +1,7 @@
+#
+# WARNING: not used yet!
+#
+
 from typing import Iterator
 
 from dishka import Provider, Scope, provide
@@ -5,10 +9,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from smo_core.helpers import PrometheusHelper
+from smo_core.helpers.grafana.grafana_helper import GrafanaHelper
+from smo_core.helpers.karmada_helper import KarmadaHelper
 from smo_core.models.base import Base
-from smo_core.utils.grafana_helper import GrafanaHelper
-from smo_core.utils.karmada_helper import KarmadaHelper
-from smo_core.utils.prometheus_helper import PrometheusHelper
 
 
 class Config:

@@ -1,4 +1,5 @@
 import time
+
 import click
 from rich.console import Console
 
