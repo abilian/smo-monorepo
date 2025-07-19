@@ -1,7 +1,6 @@
 """Application graph deployment business logic."""
 
 import tempfile
-from os import path, walk
 from pathlib import Path
 
 import yaml
