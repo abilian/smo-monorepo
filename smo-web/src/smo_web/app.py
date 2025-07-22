@@ -42,3 +42,6 @@ def create_app(config_name: str = "") -> connexion.AsyncApp:
     #     db.create_all()
 
     return app
+
+
+app = create_app()
