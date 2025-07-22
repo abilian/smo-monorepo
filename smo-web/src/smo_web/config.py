@@ -3,13 +3,13 @@ from pathlib import Path
 
 __all__ = ["config"]
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# dotenv_path = os.environ.get(
-#     "DOTENV_PATH", os.path.join(os.path.dirname(__file__), "..", "config", "flask.env")
-# )
-# if os.path.exists(dotenv_path):
-#     load_dotenv(dotenv_path=dotenv_path)
+dotenv_path = os.environ.get(
+    "DOTENV_PATH", os.path.join(os.path.dirname(__file__), "..", "config", "flask.env")
+)
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path=dotenv_path)
 
 HOME = os.getenv("HOME", "/root")
 
