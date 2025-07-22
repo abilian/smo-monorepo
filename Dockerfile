@@ -26,4 +26,4 @@ ENV DOTENV_PATH=/app/config/flask.env
 EXPOSE 8000
 
 # Use gunicorn with the uvicorn worker for production
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--workers", "4", "smo_web.app:create_app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "smo_web.app:create_app"]
