@@ -39,15 +39,13 @@ format:
 
 ## Sync code with remote repositories
 sync-code:
-	git pull origin main
-	git pull github main
-	git pull sourcehut main
+	git pull origin
 	@make push-code
 
 ## Push code to remote repositories
 push-code:
-	git push origin main
-	git push github main
-	git push sourcehut main
+	git push origin
+	git push eclipse
+	git push ci
 
 .PHONY: sync-code push-code
