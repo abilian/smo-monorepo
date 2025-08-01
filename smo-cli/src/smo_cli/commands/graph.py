@@ -182,7 +182,7 @@ def start(ctx: CliContext, name: str):
 #
 # Utilities
 #
-def get_graph_data(descriptor):
+def get_graph_data(descriptor: str) -> dict:
     if descriptor.startswith("oci://"):
         descriptor = "http://" + descriptor[len("oci://") :]
 
