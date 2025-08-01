@@ -39,7 +39,7 @@ format:
 
 ## Sync code with remote repositories
 sync-code:
-	git pull origin
+	git pull origin main
 	@make push-code
 
 ## Push code to remote repositories
