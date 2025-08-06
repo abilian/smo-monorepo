@@ -1,7 +1,24 @@
 from dishka import Provider, Scope, provide
 from smo_core.context import SmoCoreContext
 from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
+from smo_core.services import cluster_service
 from smo_ui.config import config_data
+
+
+class ServiceProvider(Provider):
+    """Provides core business services"""
+    
+    scope = Scope.APP
+
+    @provide
+    def get_cluster_service(
+        self,
+        context: SmoCoreContext,
+    ) -> cluster_service.ClusterService:
+        return cluster_service.ClusterService(
+            context=context,
+            config=context.config,
+        )
 
 
 class ConfigProvider(Provider):
@@ -60,6 +77,7 @@ class ContextProvider(Provider):
 
 main_providers = [
     ConfigProvider(),
-    InfraProvider(),
+    InfraProvider(), 
     ContextProvider(),
+    ServiceProvider(),
 ]
