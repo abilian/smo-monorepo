@@ -7,14 +7,14 @@ The SMO CLI provides terminal-based management of the Synergetic Meta-Orchestrat
 
 ### Core Capabilities
 - **Graph Management**: Deploy, start, stop, and remove application graphs
-- **Cluster Operations**: View and sync cluster resources and status  
+- **Cluster Operations**: View and sync cluster resources and status
 - **Auto-scaling**: Configure and run threshold-based autoscalers
 - **Rich Terminal UI**: Colorful, formatted output with tables and panels
 
 ### Technical Highlights
 - Built with Python 3.8+
 - Click framework for CLI commands
-- Rich library for terminal formatting  
+- Rich library for terminal formatting
 - SQLite local state storage
 - Dishka for dependency injection
 - Full integration with smo-core engine
@@ -40,6 +40,7 @@ smo-cli init
 ## Usage Examples
 
 ### Graph Operations
+
 ```bash
 # Deploy a graph
 smo-cli graph deploy --project my-project graph.yaml
@@ -51,7 +52,7 @@ smo-cli graph list
 smo-cli graph describe my-graph
 ```
 
-### Cluster Management  
+### Cluster Management
 ```bash
 # Sync cluster info
 smo-cli cluster sync
