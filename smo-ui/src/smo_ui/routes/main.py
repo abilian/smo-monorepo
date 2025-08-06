@@ -1,17 +1,20 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy import func
-from sqlalchemy.orm import Session
-
+from dishka.integrations.fastapi import FromDishka
 from smo_core.models import Cluster, Graph
-from smo_ui.extensions import get_db, templates
+from smo_core.services import cluster_service, graph_service
+from smo_ui.extensions import templates
 
 router = APIRouter()
 
 
 @router.get("/", response_class=HTMLResponse)
-async def index(request: Request, db: Session = Depends(get_db)):
-    num_projects = db.query(func.count(Graph.project.distinct())).scalar()
+async def index(
+    request: Request,
+    graph_service: FromDishka[graph_service.GraphService],
+    cluster_service: FromDishka[cluster_service.ClusterService],
+):
+    num_projects = graph_service.count_projects()
     num_graphs = db.query(func.count(Graph.id)).scalar()
     num_active_graphs = (
         db.query(func.count(Graph.id)).filter(Graph.status == "Running").scalar()

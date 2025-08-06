@@ -6,7 +6,7 @@ from . import clusters, docs, events, graphs, main, marketplace, projects, setti
 def register_routers(app: FastAPI):
     """Register all routers for the application."""
     app.include_router(main.router)
-    app.include_router(projects.router)
+    app.include_router(projects.router) 
     app.include_router(graphs.router)
     app.include_router(clusters.router)
     app.include_router(marketplace.router)
