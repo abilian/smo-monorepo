@@ -13,14 +13,14 @@ async def index(
     graph_service: FromDishka[graph_service.GraphService],
     cluster_service: FromDishka[cluster_service.ClusterService],
 ):
-    stats = graph_service.get_dashboard_stats()
-        "projects": num_projects,
-        "graphs": num_graphs,
-        "active_graphs": num_active_graphs,
-        "inactive_graphs": num_graphs - num_active_graphs,
-        "clusters": num_clusters,
-        "ready_clusters": num_ready_clusters,
-        "not_ready_clusters": num_clusters - num_ready_clusters,
+    stats = {
+        "projects": 1,
+        "graphs": 1,
+        "active_graphs": 1,
+        "inactive_graphs": 0,
+        "clusters": 1,
+        "ready_clusters": 1,
+        "not_ready_clusters": 0,
     }
 
     # The event log is static for now as there's no event service in smo-core
