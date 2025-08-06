@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Dashboard</h1>
+  </header>
+  <style>
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .stat-card .title {
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 10px;
+    }
+    .stat-card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+    .stat-card .detail {
+      margin-top: 5px;
+      color: #718096;
+    }
+    .event-log-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .event-log-item:last-child {
+      border-bottom: none;
+    }
+    .event-icon {
+      margin-right: 15px;
+      font-size: 1.2rem;
+    }
+    .event-time {
+      color: #718096;
+      margin-left: auto;
+      font-size: 0.9rem;
+    }
+  </style>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="title">Projects</div>
+      <div class="value">{{ stats.projects }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="title">Graphs</div>
+      <div class="value">{{ stats.graphs }}</div>
+      <div class="detail">
+        <span style="color: #16a34a">{{ stats.active_graphs }} Active</span> /
+        <span style="color: #4b5563">{{ stats.inactive_graphs }} Inactive</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="title">Clusters</div>
+      <div class="value">{{ stats.clusters }}</div>
+      <div class="detail">
+        <span style="color: #16a34a">{{ stats.ready_clusters }} Ready</span> /
+        <span style="color: #ca8a04">{{ stats.not_ready_clusters }} Not Ready</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Recent Events</h2>
+    <div class="event-log">
+      <div class="event-log-item">
+        <div class="event-icon">🚀</div>
+        <div>
+          <b>data-pipeline</b> was deployed in project <b>staging</b>.
+        </div>
+        <div class="event-time">2 minutes ago</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">🔄</div>
+        <div>Optimized placement for <b>video-transcoder</b>.</div>
+        <div class="event-time">15 minutes ago</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">🔴</div>
+        <div>
+          Alert received: `HighMemoryUsage` on service `database` of
+          <b>my-app-graph-1</b>.
+        </div>
+        <div class="event-time">45 minutes ago</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">✅</div>
+        <div>Cluster <b>onprem-cluster-1</b> joined the federation.</div>
+        <div class="event-time">2 hours ago</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

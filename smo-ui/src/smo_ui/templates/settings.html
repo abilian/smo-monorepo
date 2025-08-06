@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Settings - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Settings</h1>
+  </header>
+  <div class="form-container">
+    <div class="card">
+      <h2>Database</h2>
+      <dl class="info-grid">
+        <dt>URL</dt>
+        <dd><code>{{ config.database.url }}</code></dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h2>Karmada Connection</h2>
+      <dl class="info-grid">
+        <dt>Kubeconfig Path</dt>
+        <dd><code>{{ config.karmada.kubeconfig }}</code></dd>
+      </dl>
+      <button class="btn btn-secondary" style="margin-top: 15px">
+        Test Connection
+      </button>
+    </div>
+    <div class="card">
+      <h2>Prometheus Connection</h2>
+      <dl class="info-grid">
+        <dt>Host URL</dt>
+        <dd><code>{{ config.prometheus.host }}</code></dd>
+      </dl>
+      <button class="btn btn-secondary" style="margin-top: 15px">
+        Test Connection
+      </button>
+    </div>
+    <div class="card">
+      <h2>Grafana Connection</h2>
+      <dl class="info-grid">
+        <dt>Host URL</dt>
+        <dd><code>{{ config.grafana.grafana_host }}</code></dd>
+        <dt>User</dt>
+        <dd>{{ config.grafana.username }}</dd>
+      </dl>
+      <button class="btn btn-secondary" style="margin-top: 15px">
+        Test Connection
+      </button>
+    </div>
+    <button class="btn btn-primary" disabled>Save Changes</button>
+  </div>
+{% endblock %}

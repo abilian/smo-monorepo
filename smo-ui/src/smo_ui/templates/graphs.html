@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Graphs in {{ project_name }} - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <div>
+      <a
+        href="{{ url_for('projects.projects') }}"
+        style="
+          color: #4a5568;
+          text-decoration: none;
+          font-weight: 500;
+          display: block;
+          margin-bottom: 10px;
+        "
+        >&larr; All projects</a
+      >
+      <h1>Graphs in "{{ project_name }}"</h1>
+    </div>
+    <a href="{{ url_for('graphs.deploy') }}" class="btn btn-primary"
+      >Deploy a new Graph</a
+    >
+  </header>
+  <div class="graph-list">
+    {% for graph in graphs %}
+      <div class="graph-item">
+        <div class="graph-info">
+          <h3>
+            {{ graph.name }}
+            <span class="status-badge status-{{ graph.status|lower }}">{{ graph.status }}</span>
+          </h3>
+          <p>Project: {{ graph.project }}</p>
+        </div>
+        <div class="graph-actions">
+          <a
+            href="{{ url_for('graphs.graph_details', graph_id=graph.name) }}"
+            class="btn btn-secondary"
+            >Details</a
+          >
+          {% if graph.status == 'Running' %}
+            <button class="btn btn-secondary">Stop</button>
+          {% elif graph.status == 'Stopped' %}
+            <button class="btn btn-secondary">Start</button>
+          {% else %}
+            <button class="btn btn-secondary" disabled>Stop</button>
+          {% endif %}
+          <button class="btn btn-danger">Remove</button>
+        </div>
+      </div>
+    {% else %}
+      <div class="card"><p>No graphs found in this project.</p></div>
+    {% endfor %}
+  </div>
+{% endblock %}

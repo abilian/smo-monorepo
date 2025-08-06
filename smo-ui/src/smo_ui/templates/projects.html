@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Projects - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Projects</h1>
+    <button class="btn btn-primary">Create Project</button>
+  </header>
+  <style>
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .project-card {
+      text-decoration: none;
+      color: inherit;
+    }
+    .project-card .card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .project-card h3 {
+      margin-top: 0;
+    }
+    .project-card .stats {
+      display: flex;
+      gap: 20px;
+      color: #4a5568;
+    }
+  </style>
+  <div class="project-grid">
+    {% for project in projects %}
+      <a
+        href="{{ url_for('graphs.graphs', project_name=project.project) }}"
+        class="project-card"
+      >
+        <div class="card">
+          <h3>{{ project.project }}</h3>
+          <div class="stats">
+            <span><strong>{{ project.graph_count }}</strong> Graphs</span>
+            <span><strong>{{ project.active_graph_count or 0 }}</strong> Active</span>
+          </div>
+        </div>
+      </a>
+    {% else %}
+      <div class="card">
+        <p>No projects found. Deploy a graph to create a project.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

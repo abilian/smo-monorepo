@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Event Log - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Event Log</h1>
+  </header>
+  <div class="card">
+    <style>
+      .event-log-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f2f5;
+        font-size: 0.95rem;
+      }
+      .event-log-item:last-child {
+        border-bottom: none;
+      }
+      .event-icon {
+        margin-right: 15px;
+        font-size: 1.2rem;
+      }
+      .event-time {
+        color: #718096;
+        margin-left: auto;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        padding-left: 20px;
+      }
+    </style>
+    <div class="event-log">
+      <div class="event-log-item">
+        <div class="event-icon">🚀</div>
+        <div>
+          <b>data-pipeline</b> was deployed in project <b>staging</b>.
+        </div>
+        <div class="event-time">2024-08-01 15:02:10 UTC</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">🔄</div>
+        <div>
+          Optimized placement for <b>video-transcoder</b>. Action triggered
+          by user `admin`.
+        </div>
+        <div class="event-time">2024-08-01 14:45:33 UTC</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">🔴</div>
+        <div>
+          Alert received from Prometheus: `HighMemoryUsage` on service
+          `database` of <b>my-app-graph-1</b>.
+        </div>
+        <div class="event-time">2024-08-01 14:15:01 UTC</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">✅</div>
+        <div>
+          Cluster sync complete. Cluster
+          <b>onprem-cluster-1</b> joined the federation.
+        </div>
+        <div class="event-time">2024-08-01 13:00:00 UTC</div>
+      </div>
+      <div class="event-log-item">
+        <div class="event-icon">🛑</div>
+        <div>
+          Graph <b>hello-world</b> was stopped by user `joe`.
+        </div>
+        <div class="event-time">2024-07-31 10:20:45 UTC</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Graph Details - {{ graph.name }}{% endblock %}
+{% block content %}
+  <header class="header">
+    <div class="header-title">
+      <a
+        href="{{ url_for('graphs.graphs', project_name=graph.project) }}"
+        style="
+          color: #4a5568;
+          text-decoration: none;
+          font-weight: 500;
+          display: block;
+          margin-bottom: 10px;
+        "
+        >&larr; Graphs in "{{ graph.project }}"</a
+      >
+      <h1>
+        {{ graph.name }}
+        <span class="status-badge status-{{ graph.status|lower }}">{{ graph.status }}</span>
+      </h1>
+    </div>
+    <div>
+      <button class="btn btn-secondary">Optimize Placement</button>
+      <button class="btn btn-danger-outline" style="margin-left: 10px">
+        Remove
+      </button>
+    </div>
+  </header>
+  <div class="content-grid">
+    <div class="main-column">
+      <div class="card">
+        <h2>Services and Placements</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Status</th>
+              <th>Cluster Affinity</th>
+              <th>Resources (CPU/RAM/GPU)</th>
+              <th>Dashboard</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for service in graph.services %}
+              <tr>
+                <td>{{ service.name }}</td>
+                <td>{{ service.status }}</td>
+                <td>{{ service.cluster_affinity or 'N/A' }}</td>
+                <td>{{ service.cpu }} / {{ service.memory }} / {{ service.gpu }}</td>
+                <td>
+                  <a href="{{ service.grafana }}" target="_blank">Grafana</a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" style="text-align: center">
+                  No services defined in this graph.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="side-column">
+      <div class="card">
+        <h2>Information</h2>
+        <dl class="info-grid">
+          <dt>Project</dt>
+          <dd>{{ graph.project }}</dd>
+          <dt>Descriptor</dt>
+          <dd>
+            <code>{{ graph.hdaGraph.id }}:{{ graph.hdaGraph.version }}</code>
+          </dd>
+          <dt>Dashboard</dt>
+          <dd>
+            {% if graph.grafana %}
+              <a href="{{ graph.grafana }}" target="_blank">View in Grafana</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>Actions</h2>
+        <style>
+          .action-btn {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+          }
+        </style>
+        <button class="btn btn-secondary action-btn">Stop Graph</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}

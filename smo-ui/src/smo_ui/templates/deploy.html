@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Deploy New Graph - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <a
+      href="{{ url_for('graphs.graphs', project_name='default') }}"
+      style="color: #4a5568; text-decoration: none; font-weight: 500"
+      >← Back to Graphs</a
+    >
+  </header>
+  <h1>Deploy New Graph</h1>
+  {% if error %}
+    <div class="card" style="background-color: #fee2e2; color: #dc2626">
+      <strong>Error:</strong> {{ error }}
+    </div>
+  {% endif %}
+  <div class="card">
+    <div class="form-container">
+      <form method="post">
+        <div class="form-step">
+          <h2>1. Descriptor</h2>
+          <label for="descriptor-url">OCI Descriptor URL</label>
+          <input
+            type="text"
+            id="descriptor-url"
+            name="descriptor-url"
+            placeholder="oci://registry.example.com/project/my-graph:1.0.0"
+          />
+        </div>
+        <div class="form-step">
+          <h2>2. Project</h2>
+          <label for="project-name">Project / Namespace</label>
+          <input
+            type="text"
+            id="project-name"
+            name="project-name"
+            placeholder="default"
+          />
+        </div>
+        <div>
+          <button class="btn btn-primary" type="submit">Deploy Graph</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

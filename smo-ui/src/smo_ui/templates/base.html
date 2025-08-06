@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}SMO{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/common.css') }}" />
+    <script src="{{ url_for('static', path='js/components.js') }}" defer></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <smo-sidebar active-page="{{ active_page|default('dashboard') }}"></smo-sidebar>
+    <div class="main-content">
+      {% block content %}{% endblock %}
+    </div>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

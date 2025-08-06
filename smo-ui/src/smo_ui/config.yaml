@@ -1,0 +1,20 @@
+# Configuration for the SMO FastAPI application.
+# It is recommended to use environment variables or a secrets management
+# system for production environments instead of storing credentials in this file.
+
+database:
+  url: "sqlite:///fastapi1/smo.db"
+
+karmada:
+  # Path to the Karmada kubeconfig file.
+  kubeconfig: "~/.kube/karmada.config"
+
+prometheus:
+  # URL for the Prometheus server.
+  host: "http://prometheus.monitoring:9090"
+
+grafana:
+  # Connection details for the Grafana instance.
+  grafana_host: "http://grafana.monitoring:3000"
+  username: "admin"
+  password: "password" # IMPORTANT: Change this to your actual Grafana password.

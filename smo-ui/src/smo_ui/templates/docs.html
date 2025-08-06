@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}API Documentation - SMO{% endblock %}
+{% block content %}
+  <div class="main-content" style="padding: 0; height: 100vh">
+    <!-- Container for Swagger UI -->
+    <div id="swagger-ui"></div>
+    <script
+      src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"
+      crossorigin
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
+    />
+    <script>
+      window.onload = () => {
+        SwaggerUIBundle({
+          // The openapi.yaml file would be loaded here
+          url: "https://petstore3.swagger.io/api/v3/openapi.json", // Example URL
+          dom_id: "#swagger-ui",
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIBundle.SwaggerUIStandalonePreset,
+          ],
+          layout: "BaseLayout",
+        });
+      };
+    </script>
+  </div>
+{% endblock %}

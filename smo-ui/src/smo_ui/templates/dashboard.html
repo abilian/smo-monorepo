@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}SMO Dashboard{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Graphs</h1>
+    <a href="{{ url_for('graphs.deploy') }}" class="btn btn-primary">Deploy New Graph</a>
+  </header>
+  <div class="graph-list">
+    <div class="graph-item">
+      <div class="graph-info">
+        <h3>
+          my-app-graph-1
+          <span class="status-badge status-running">Running</span>
+        </h3>
+        <p>Project: default</p>
+      </div>
+      <div class="graph-actions">
+        <a href="{{ url_for('graphs.graph_details', graph_id='my-app-graph-1') }}" class="btn btn-secondary">Describe</a>
+        <button class="btn btn-secondary">Stop</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+    </div>
+    <div class="graph-item">
+      <div class="graph-info">
+        <h3>
+          video-transcoder
+          <span class="status-badge status-degraded">Degraded</span>
+        </h3>
+        <p>Project: production</p>
+      </div>
+      <div class="graph-actions">
+        <a href="{{ url_for('graphs.graph_details', graph_id='video-transcoder') }}" class="btn btn-secondary">Describe</a>
+        <button class="btn btn-secondary">Stop</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+    </div>
+    <div class="graph-item">
+      <div class="graph-info">
+        <h3>
+          hello-world
+          <span class="status-badge status-stopped">Stopped</span>
+        </h3>
+        <p>Project: test</p>
+      </div>
+      <div class="graph-actions">
+        <a href="{{ url_for('graphs.graph_details', graph_id='hello-world') }}" class="btn btn-secondary">Describe</a>
+        <button class="btn btn-secondary">Start</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+    </div>
+    <div class="graph-item">
+      <div class="graph-info">
+        <h3>
+          data-pipeline
+          <span class="status-badge status-deploying">Deploying</span>
+        </h3>
+        <p>Project: staging</p>
+      </div>
+      <div class="graph-actions">
+        <a href="{{ url_for('graphs.graph_details', graph_id='data-pipeline') }}" class="btn btn-secondary">Describe</a>
+        <button class="btn btn-secondary" disabled>Stop</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}

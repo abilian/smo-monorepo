@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Clusters - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Clusters</h1>
+    <button class="btn btn-primary">Sync with Karmada</button>
+  </header>
+  <div class="card">
+    <h2>Federated Clusters</h2>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+    </style>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Location</th>
+          <th>GPU</th>
+          <th>Available CPU</th>
+          <th>Available RAM</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cluster in clusters %}
+          <tr>
+            <td>
+              {% if cluster.grafana %}
+                <a href="{{ cluster.grafana }}" target="_blank">{{ cluster.name }}</a>
+              {% else %}
+                {{ cluster.name }}
+              {% endif %}
+            </td>
+            <td>
+              {% if cluster.availability %}
+                <span class="status-badge status-running">Ready</span>
+              {% else %}
+                <span class="status-badge status-degraded">Not Ready</span>
+              {% endif %}
+            </td>
+            <td>{{ cluster.location }}</td>
+            <td>{{ 'Yes' if cluster.acceleration else 'No' }}</td>
+            <td>{{ "%.2f"|format(cluster.available_cpu) }} cores</td>
+            <td>{{ cluster.available_ram }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center">
+              No clusters found. Try syncing with Karmada.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Marketplace - SMO{% endblock %}
+{% block content %}
+  <header class="header">
+    <h1>Marketplace</h1>
+  </header>
+  <style>
+    .tabs {
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 24px;
+    }
+    .tabs a {
+      display: inline-block;
+      padding: 12px 20px;
+      text-decoration: none;
+      color: #4a5568;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+    }
+    .tabs a.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+    .marketplace-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .marketplace-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .marketplace-item .icon {
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+    .marketplace-item h4 {
+      margin: 0 0 8px 0;
+      font-size: 1.1rem;
+    }
+    .marketplace-item p {
+      margin: 0 0 20px 0;
+      color: #718096;
+      flex-grow: 1;
+      font-size: 0.9rem;
+    }
+  </style>
+  <div class="tabs">
+    <a href="#" class="active">Featured</a>
+    <a href="#">Databases</a>
+    <a href="#">Storage</a>
+    <a href="#">AI/ML</a>
+    <a href="#">Network</a>
+  </div>
+  <div class="marketplace-grid">
+    <div class="card marketplace-item">
+      <div class="icon">💾</div>
+      <h4>MinIO</h4>
+      <p>S3-compatible object storage, high performance and distributed.</p>
+      <button class="btn btn-secondary">Deploy</button>
+    </div>
+    <div class="card marketplace-item">
+      <div class="icon">⚡️</div>
+      <h4>Redis</h4>
+      <p>
+        In-memory database, used as a cache, message broker, and database.
+      </p>
+      <button class="btn btn-secondary">Deploy</button>
+    </div>
+    <div class="card marketplace-item">
+      <div class="icon">☁️</div>
+      <h4>OpenFaaS</h4>
+      <p>
+        Serverless functions framework for Kubernetes. Simple and portable.
+      </p>
+      <button class="btn btn-secondary">Deploy</button>
+    </div>
+    <div class="card marketplace-item">
+      <div class="icon">🗃️</div>
+      <h4>PostgreSQL</h4>
+      <p>
+        Powerful and open source object-relational database management system.
+      </p>
+      <button class="btn btn-secondary">Deploy</button>
+    </div>
+  </div>
+{% endblock %}
