@@ -1,8 +1,10 @@
 import yaml
 
-CONFIG_PATH = "fastapi1/config.yaml"
+CONFIG_PATH = "config.yaml"
 DEFAULT_CONFIG_DATA = {
-    "database": {"url": "sqlite:///fastapi1/smo.db"},
+    "database": {
+        "url": "sqlite:///data/smo.db",
+    },
     "karmada": {"kubeconfig": "~/.kube/karmada.config"},
     "prometheus": {"host": "http://prometheus.monitoring:9090"},
     "grafana": {

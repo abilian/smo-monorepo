@@ -9,7 +9,7 @@ from smo_core.models.base import Base
 from .config import config_data
 from .testing import MockKarmadaHelper
 
-templates = Jinja2Templates(directory="fastapi1/templates")
+templates = Jinja2Templates(directory="src/smo_ui/templates")
 
 
 # --- Database Setup ---

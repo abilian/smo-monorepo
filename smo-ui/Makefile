@@ -16,7 +16,8 @@ format:
 	ruff format .
 
 clean:
-	rm -rf .pytest_cache .nox .ruff_cache dist build __pycache__ .mypy_cache .coverage htmlcov .coverage.* *.egg-info
+	rm -rf .pytest_cache .nox .ruff_cache dist build __pycache__ \
+		.mypy_cache .coverage htmlcov .coverage.* *.egg-info
 
 build: clean
 	uv build
@@ -29,5 +30,5 @@ publish: build
 
 .PHONY: run
 
-run-fastapi-granian:
+run:
 	granian --interface asgi --factory smo_ui.app:create_app --reload

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Request
-from fastapi1.extensions import get_db, templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from smo_core.models import Graph
+from smo_ui.extensions import get_db, templates
 
 router = APIRouter(prefix="/projects")
 

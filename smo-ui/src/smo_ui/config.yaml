@@ -3,7 +3,7 @@
 # system for production environments instead of storing credentials in this file.
 
 database:
-  url: "sqlite:///fastapi1/smo.db"
+  url: "sqlite:///data/smo.db"
 
 karmada:
   # Path to the Karmada kubeconfig file.

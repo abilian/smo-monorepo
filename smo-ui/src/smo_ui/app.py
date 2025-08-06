@@ -9,7 +9,7 @@ def create_app():
     app = FastAPI(title="SMO-UI")
 
     # Mount static files
-    app.mount("/static", StaticFiles(directory="fastapi1/static"), name="static")
+    app.mount("/static", StaticFiles(directory="src/smo_ui/static"), name="static")
 
     # Register routers
     register_routers(app)

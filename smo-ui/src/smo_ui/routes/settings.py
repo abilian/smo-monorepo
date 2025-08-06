@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Request
-from fastapi1.extensions import get_smo_context, templates
 from fastapi.responses import HTMLResponse
 
 from smo_core.context import SmoCoreContext
+from smo_ui.extensions import get_smo_context, templates
 
 router = APIRouter(prefix="/settings")
 

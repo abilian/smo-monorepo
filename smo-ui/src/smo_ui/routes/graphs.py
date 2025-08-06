@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Form, Request
-from fastapi1.extensions import get_db, get_smo_context, templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from smo_core.context import SmoCoreContext
 from smo_core.services import graph_service
+from smo_ui.extensions import get_db, get_smo_context, templates
 
 router = APIRouter(prefix="/graphs")
 
