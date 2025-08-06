@@ -21,3 +21,36 @@ except FileNotFoundError:
     print(f"WARNING: Configuration file not found at {CONFIG_PATH}. Using defaults.")
     # A default config, assuming services are running locally or as per README
     config_data = DEFAULT_CONFIG_DATA
+
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Config:
+    _data: dict
+
+    def get(self, *path: list[str], default=None):
+        """
+        Retrieves a value from the configuration data using a list of keys.
+
+        Args:
+            path (list[str]): A list of keys to traverse the nested dictionary.
+            default: The value to return if the key path is not found.
+        Returns:
+            The requested value, or the default if not found.
+        """
+        value = self._data
+        try:
+            for key in path:
+                value = value[key]
+            return value
+        except (KeyError, TypeError):
+            return default
+
+    @property
+    def data(self):
+        return self._data
+
+
+config = Config(_data=config_data)

@@ -26,8 +26,10 @@ from .commands.cluster import cluster
 from .commands.graph import graph
 from .commands.init import init
 from .commands.scaler import scaler
+from .commands.config import config
 
 main.add_command(init)
 main.add_command(cluster)
 main.add_command(graph)
 main.add_command(scaler)
+main.add_command(config)

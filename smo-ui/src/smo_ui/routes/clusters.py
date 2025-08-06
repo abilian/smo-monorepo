@@ -1,6 +1,7 @@
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from dishka.integrations.fastapi import FromDishka, DishkaRoute
+
 from smo_core.services.cluster_service import ClusterService
 from smo_ui.extensions import templates
 
