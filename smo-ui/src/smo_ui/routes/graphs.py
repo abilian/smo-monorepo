@@ -1,17 +1,23 @@
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from smo_core.context import SmoCoreContext
-from smo_core.services import graph_service
+from smo_core.services.graph_service import GraphService
 from smo_ui.extensions import get_db, get_smo_context, templates
 
-router = APIRouter(prefix="/graphs")
+router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
 
 
 @router.get("/{project_name}", response_class=HTMLResponse)
-async def graphs(request: Request, project_name: str, db: Session = Depends(get_db)):
-    graphs_list = graph_service.fetch_project_graphs(db, project_name)
+async def graphs(
+    request: Request,
+    project_name: str,
+    db: Session = Depends(get_db),
+    context: SmoCoreContext = Depends(get_smo_context),
+):
+    graphs_list = graph_service.fetch_project_graphs(context, db, project_name)
     return templates.TemplateResponse(
         request,
         "graphs.html",

@@ -1,27 +1,19 @@
-from fastapi import APIRouter, Depends, Request
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy import case, func
-from sqlalchemy.orm import Session
 
-from smo_core.models import Graph
-from smo_ui.extensions import get_db, templates
+from smo_core.services.graph_service import GraphService
+from smo_ui.extensions import templates
 
-router = APIRouter(prefix="/projects")
+router = APIRouter(prefix="/projects", route_class=DishkaRoute)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def projects(request: Request, db: Session = Depends(get_db)):
-    project_stats = (
-        db.query(
-            Graph.project,
-            func.count(Graph.id).label("graph_count"),
-            func.sum(case((Graph.status == "Running", 1), else_=0)).label(
-                "active_graph_count"
-            ),
-        )
-        .group_by(Graph.project)
-        .all()
-    )
+async def projects(
+    request: Request,
+    graph_service: FromDishka[GraphService],
+):
+    project_stats = graph_service.get_project_stats()
 
     return templates.TemplateResponse(
         request,

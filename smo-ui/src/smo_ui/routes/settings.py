@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, Request
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from smo_core.context import SmoCoreContext
-from smo_ui.extensions import get_smo_context, templates
+from smo_ui.extensions import templates
 
-router = APIRouter(prefix="/settings")
+router = APIRouter(prefix="/settings", route_class=DishkaRoute)
 
 
 @router.get("/", response_class=HTMLResponse)
 async def settings(
-    request: Request, context: SmoCoreContext = Depends(get_smo_context)
+    request: Request,
+    context: FromDishka[SmoCoreContext],
 ):
     return templates.TemplateResponse(
         request,

@@ -1,21 +1,19 @@
-from fastapi import APIRouter, Depends, Request
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy.orm import Session
 
-from smo_core.context import SmoCoreContext
-from smo_core.services import cluster_service
-from smo_ui.extensions import get_db, get_smo_context, templates
+from smo_core.services.cluster_service import ClusterService
+from smo_ui.extensions import templates
 
-router = APIRouter(prefix="/clusters")
+router = APIRouter(prefix="/clusters", route_class=DishkaRoute)
 
 
 @router.get("/", response_class=HTMLResponse)
 async def clusters(
     request: Request,
-    db: Session = Depends(get_db),
-    context: SmoCoreContext = Depends(get_smo_context),
+    cluster_service: FromDishka[ClusterService],
 ):
-    cluster_list = cluster_service.fetch_clusters(context, db)
+    cluster_list = cluster_service.fetch_clusters()
     return templates.TemplateResponse(
         request,
         "clusters.html",
