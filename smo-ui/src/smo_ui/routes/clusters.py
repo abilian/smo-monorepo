@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from dishka.integrations.fastapi import FromDishka, inject
+from dishka.integrations.fastapi import FromDishka
 from smo_core.services.cluster_service import ClusterService
 from smo_ui.extensions import templates
 
@@ -8,7 +8,6 @@ router = APIRouter(prefix="/clusters")
 
 
 @router.get("/", response_class=HTMLResponse)
-@inject
 async def clusters(
     request: Request,
     cluster_service: FromDishka[ClusterService],

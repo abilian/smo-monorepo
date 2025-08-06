@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from dishka.integrations.fastapi import FromDishka
-from smo_core.services import cluster_service, graph_service
+from smo_core.services.cluster_service import ClusterService
+from smo_core.services.graph_service import GraphService
 from smo_ui.extensions import templates
 
 router = APIRouter()
@@ -10,8 +11,8 @@ router = APIRouter()
 @router.get("/", response_class=HTMLResponse)
 async def index(
     request: Request,
-    graph_service: FromDishka[graph_service.GraphService],
-    cluster_service: FromDishka[cluster_service.ClusterService],
+    graph_service: FromDishka[GraphService],
+    cluster_service: FromDishka[ClusterService],
 ):
     stats = {
         "projects": 1,
