@@ -23,7 +23,7 @@ def run_helm(command: str, *args: str) -> str:
     :param args: Additional arguments for the command.
     :return: The output of the command as a string.
     """
-    cmd = ["helm", command] + list(args)
+    cmd = ["helm", command] + [str(arg) for arg in args if arg is not None]
     print(f"Running command: {' '.join(cmd)}")
     # result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     result = subprocess.run(cmd, capture_output=True, text=True, check=False)

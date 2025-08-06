@@ -1,4 +1,8 @@
-from smo_core.utils.scaling import decide_replicas
+from unittest.mock import patch
+
+import pytest
+
+from smo_core.utils.scaling import decide_replicas, scaling_loop
 
 
 def test_decide_replicas_feasible():
@@ -107,3 +111,38 @@ def test_decide_replicas_minimum_replicas_constraint():
 
     assert solution is not None
     assert solution == [1], "Minimum replicas should be at least 1"
+
+
+def test_scaling_loop(mocker):
+    """Test the scaling loop function."""
+    mock_karmada = mocker.MagicMock()
+    mock_karmada.get_replicas.return_value = 1
+    mock_karmada.get_cpu_limit.return_value = 0.5
+
+    mock_prom = mocker.MagicMock()
+    mock_prom.get_request_rate.return_value = 10.0
+
+    mock_stop = mocker.MagicMock()
+    mock_stop.is_set.side_effect = [False, True]  # Run one iteration then stop
+
+    # Mock KarmadaHelper to avoid loading kubeconfig
+    with patch("smo_core.utils.scaling.KarmadaHelper") as mock_karmada_helper:
+        mock_karmada_helper.return_value = mock_karmada
+
+        with patch("requests.get") as mock_get:
+            scaling_loop(
+                "test-graph",
+                [False],
+                [20],
+                [5],
+                10.0,
+                False,
+                [5],
+                ["svc1"],
+                5,
+                "/tmp/kubeconfig",  # This path won't be used now
+                "http://prometheus",
+                mock_stop,
+            )
+
+            mock_karmada.scale_deployment.assert_called_once()
