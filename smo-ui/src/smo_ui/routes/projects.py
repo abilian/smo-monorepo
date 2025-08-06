@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from dishka.integrations.fastapi import FromDishka
+from dishka.integrations.fastapi import FromDishka, DishkaRoute
 from smo_core.services.graph_service import GraphService
 from smo_ui.extensions import templates
 
-router = APIRouter(prefix="/projects")
+router = APIRouter(prefix="/projects", route_class=DishkaRoute)
 
 
 @router.get("/", response_class=HTMLResponse)
