@@ -162,7 +162,8 @@ def decide_replicas(
     problem.solve(solver=cp.HIGHS)
 
     if problem.status == cp.OPTIMAL:
-        solution = [int(round(r.value)) for r in r_current]
+        # Convert numpy array values to integers
+        solution = [int(round(float(r.value))) for r in r_current]
         return solution
     else:
         return None
