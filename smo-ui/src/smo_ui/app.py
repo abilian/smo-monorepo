@@ -11,7 +11,7 @@ def create_app():
     # Mount static files
     app.mount("/static", StaticFiles(directory="src/smo_ui/static"), name="static")
 
-    # Register routers
+    # Register routers and setup DI
     register_routers(app)
 
     return app

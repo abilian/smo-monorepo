@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Form, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
-from dishka.integrations.fastapi import FromDishka
 from smo_core.context import SmoCoreContext
 from smo_core.services import graph_service
 from smo_ui.extensions import templates, get_db, get_smo_context
@@ -13,9 +12,10 @@ router = APIRouter(prefix="/graphs")
 async def graphs(
     request: Request,
     project_name: str,
-    graph_service: FromDishka[graph_service.GraphService],
+    db: Session = Depends(get_db),
+    context: SmoCoreContext = Depends(get_smo_context),
 ):
-    graphs_list = graph_service.fetch_project_graphs(project_name)
+    graphs_list = graph_service.fetch_project_graphs(context, db, project_name)
     return templates.TemplateResponse(
         request,
         "graphs.html",
