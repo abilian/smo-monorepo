@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from click.testing import CliRunner
+from devtools import debug
 
 from smo_cli.cli import main
 
@@ -18,5 +19,6 @@ def test_init_command(runner: CliRunner, tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert "Creating default configuration" in result.output
     assert "Ensured local database is created" in result.output
+    debug(result.output)
     assert (smo_dir / "config.yaml").exists()
     assert (smo_dir / "smo.db").exists()

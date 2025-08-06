@@ -1,74 +1,67 @@
-#
-# WARNING: not used yet!
-#
+"""
+This module contains all the Dishka Providers for the SMO-CLI application.
 
-from typing import Iterator
+Providers are like instruction manuals that teach the DI container how to create
+and manage the lifecycle of our application's services and components.
+"""
 
-from dishka import Provider, Scope, provide
+from collections.abc import Iterable
+
+import click
+from dishka import Provider, Scope, from_context, provide
 from sqlalchemy import create_engine
-from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from smo_core.helpers import PrometheusHelper
-from smo_core.helpers.grafana.grafana_helper import GrafanaHelper
-from smo_core.helpers.karmada_helper import KarmadaHelper
-from smo_core.models.base import Base
+# --- Core Helpers and Services ---
+from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
+from smo_core.services.cluster_service import ClusterService
+from smo_core.services.graph_service import GraphService
+from smo_core.services.scaler_service import ScalerService
 
-
-class Config:
-    @staticmethod
-    def load():
-        return Config()
-
-    @property
-    def db_file(self):
-        return "smo_cli.db"
+# --- Core Application Components ---
+from .config import Config
+from .console import Console
 
 
 class ConfigProvider(Provider):
-    """Provides the main configuration object."""
+    """Provides the main configuration object, loaded once per application run."""
 
-    @provide(scope=Scope.APP)
-    def get_config(self) -> Config:
-        """Loads config from the default path. Fails if not found."""
-        try:
-            # The init command must be run before any other command.
-            return Config.load()
-        except FileNotFoundError as e:
-            print("ERROR: Configuration not found. Please run `smo-cli init` first.")
-            raise e
-
-
-class InfraProvider(Provider):
-    """Provides infrastructure helper clients."""
-
-    # All helpers are singletons for the app's lifetime
     scope = Scope.APP
 
-    grafana = provide(GrafanaHelper)
-    prometheus = provide(PrometheusHelper)
-    karmada = provide(KarmadaHelper)
+    @provide
+    def get_config(self) -> Config:
+        """Loads the config from ~/.smo/config.yaml"""
+        try:
+            return Config.load()
+        except FileNotFoundError as e:
+            print(f"[bold red]Error:[/] {e}")
+            print("Please run 'smo-cli init' to create the configuration file.")
+            raise click.Abort()
+
+
+class ConsoleProvider(Provider):
+    """Provides our custom console, respecting the verbosity level."""
+
+    scope = Scope.APP
+    verbosity = from_context(provides=int, scope=Scope.APP)
+
+    @provide
+    def get_console(self, verbosity: int) -> Console:
+        """Creates a single console instance based on the verbosity flag."""
+        return Console(verbosity=verbosity)
 
 
 class DbProvider(Provider):
-    """Provides the database session."""
+    """Manages the database connection lifecycle."""
 
-    @provide(scope=Scope.APP)
-    def get_engine(self, config: Config) -> Engine:
-        """Creates the SQLAlchemy engine once per application run."""
-        db_uri = f"sqlite:///{config.db_file}"
-        engine = create_engine(db_uri)
-        # Create tables if they don't exist
-        Base.metadata.create_all(bind=engine)
-        return engine
+    scope = Scope.APP
 
-    @provide(scope=Scope.APP)
-    def get_session(self, engine: Engine) -> Iterator[Session]:
-        """
-        Provides a database session that is properly closed after use.
-        This is a generator-based factory.
-        """
-        session_factory = sessionmaker(bind=engine)
+    @provide
+    def get_db_session(self, config: Config) -> Iterable[Session]:
+        """Provides a SQLAlchemy session that is automatically closed after use."""
+        db_file = config.db_file
+        engine = create_engine(f"sqlite:///{db_file}")
+        session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         session = session_factory()
         try:
             yield session
@@ -76,5 +69,82 @@ class DbProvider(Provider):
             session.close()
 
 
-# Combine all providers for easy use in the container
-main_providers = [ConfigProvider(), InfraProvider(), DbProvider()]
+class InfraProvider(Provider):
+    """Provides helpers for interacting with external systems like Karmada."""
+
+    scope = Scope.APP
+
+    @provide
+    def get_karmada(self, config: Config, console: Console) -> KarmadaHelper:
+        console.debug("Initializing KarmadaHelper...")
+        return KarmadaHelper(config.get("karmada_kubeconfig"))
+
+    @provide
+    def get_prometheus(self, config: Config, console: Console) -> PrometheusHelper:
+        console.debug("Initializing PrometheusHelper...")
+        return PrometheusHelper(
+            config.get("prometheus_host"),
+            time_window=str(config.get("scaling", "interval_seconds")),
+        )
+
+    @provide
+    def get_grafana(self, config: Config, console: Console) -> GrafanaHelper:
+        console.debug("Initializing GrafanaHelper...")
+        return GrafanaHelper(
+            config.get("grafana", "host"),
+            config.get("grafana", "username"),
+            config.get("grafana", "password"),
+        )
+
+
+class ServiceProvider(Provider):
+    """Provides the core business logic services."""
+
+    scope = Scope.APP
+
+    @provide
+    def get_cluster_service(
+        self,
+        session: Session,
+        karmada: KarmadaHelper,
+        grafana: GrafanaHelper,
+        config: Config,
+    ) -> ClusterService:
+        return ClusterService(
+            db_session=session,
+            karmada_helper=karmada,
+            grafana_helper=grafana,
+            config=config.data,
+        )
+
+    @provide
+    def get_graph_service(
+        self,
+        session: Session,
+        karmada: KarmadaHelper,
+        grafana: GrafanaHelper,
+        prometheus: PrometheusHelper,
+        config: Config,
+    ) -> GraphService:
+        return GraphService(
+            db_session=session,
+            karmada_helper=karmada,
+            grafana_helper=grafana,
+            prom_helper=prometheus,
+            config=config.data,
+        )
+
+    @provide
+    def get_scaler_service(
+        self, karmada: KarmadaHelper, prometheus: PrometheusHelper
+    ) -> ScalerService:
+        return ScalerService(karmada=karmada, prometheus=prometheus)
+
+
+main_providers = [
+    ConfigProvider(),
+    ConsoleProvider(),
+    DbProvider(),
+    InfraProvider(),
+    ServiceProvider(),
+]

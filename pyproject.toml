@@ -10,12 +10,11 @@ requires-python = ">=3.12"
 
 dependencies = [
     # Workspace
-    # "hop3-agent",
     "smo-core",
     "smo-cli",
     "smo-web",
     "smo-sdk",
-    "invoke>=2.2.0",
+    "smo-ui",
 ]
 
 # ------------------------------------
@@ -33,6 +32,8 @@ dev-dependencies = [
     "snoop>=0.6.0",
     "devtools>=0.12.2",
     "openapi-python-client>=0.25.2",
+    "invoke>=2.2.0",
+    "uv-build",
 ]
 
 [tool.uv.workspace]
@@ -43,12 +44,13 @@ smo-core = { workspace = true }
 smo-cli = { workspace = true }
 smo-web = { workspace = true }
 smo-sdk = { workspace = true }
+smo-ui = { workspace = true }
 
 # ------------------------------------
 
 [tool.isort]
 profile = "black"
-known_first_party = ["smo_core", "smo_cli"]
+known_first_party = ["smo_core", "smo_cli", "smo_web", "smo_sdk", "smo_ui"]
 
 # ------------------------------------
 

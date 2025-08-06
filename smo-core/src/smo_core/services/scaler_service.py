@@ -1,7 +1,45 @@
+from dataclasses import dataclass
+
 from smo_core.helpers import KarmadaHelper, PrometheusHelper
 
 
-def run_threshold_scaler_iteration(
+@dataclass(frozen=True)
+class ScalerService:
+    """Placeholder for the ScalerService class."""
+
+    karmada: KarmadaHelper
+    prometheus: PrometheusHelper
+
+    def run_threshold_scaler_iteration(
+        self,
+        target_deployment: str,
+        target_namespace: str,
+        scale_up_threshold: float,
+        scale_down_threshold: float,
+        scale_up_replicas: int,
+        scale_down_replicas: int,
+    ) -> dict:
+        """
+        Performs a single iteration of the threshold-based scaling logic.
+        This function is stateless and relies on the caller to manage loops and cooldowns.
+
+        Returns:
+            A dictionary describing the action taken, e.g.,
+            {'action': 'scale_up', 'new_replicas': 3, 'reason': 'RPS > threshold'}
+        """
+        return _run_threshold_scaler_iteration(
+            self.karmada,
+            self.prometheus,
+            target_deployment,
+            target_namespace,
+            scale_up_threshold,
+            scale_down_threshold,
+            scale_up_replicas,
+            scale_down_replicas,
+        )
+
+
+def _run_threshold_scaler_iteration(
     karmada: KarmadaHelper,
     prometheus: PrometheusHelper,
     target_deployment: str,
@@ -11,14 +49,6 @@ def run_threshold_scaler_iteration(
     scale_up_replicas: int,
     scale_down_replicas: int,
 ) -> dict:
-    """
-    Performs a single iteration of the threshold-based scaling logic.
-    This function is stateless and relies on the caller to manage loops and cooldowns.
-
-    Returns:
-        A dictionary describing the action taken, e.g.,
-        {'action': 'scale_up', 'new_replicas': 3, 'reason': 'RPS > threshold'}
-    """
     try:
         # Get current state from Kubernetes
         deployment = karmada.v1_api_client.read_namespaced_deployment(

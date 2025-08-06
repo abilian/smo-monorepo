@@ -1,41 +1,58 @@
 """Kubernetes cluster business logic."""
 
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from sqlalchemy import select
+from sqlalchemy.orm.session import Session
+
+from smo_core.helpers import KarmadaHelper
+from smo_core.helpers.grafana.grafana_helper import GrafanaHelper
 from smo_core.models.cluster import Cluster
 
 
-def fetch_clusters(context, db_session):
-    """
-    Retrieves all cluster data from Karmada, syncs with the DB,
-    and creates Grafana dashboards if needed.
-    """
-    karmada_helper = context.karmada
-    grafana_helper = context.grafana
+@dataclass(frozen=True)
+class ClusterService:
+    db_session: Session
+    karmada_helper: KarmadaHelper
+    grafana_helper: GrafanaHelper
+    config: dict
 
-    cluster_dict = []
-    karmada_cluster_info = karmada_helper.get_cluster_info()
+    def list_clusters(self) -> Sequence[Cluster]:
+        stmt = select(Cluster).order_by(Cluster.name)
+        return self.db_session.scalars(stmt).all()
 
-    for cluster_name, info in karmada_cluster_info.items():
-        cluster = db_session.query(Cluster).filter(Cluster.name == cluster_name).first()
-        if cluster is not None:
-            cluster.available_cpu = info["remaining_cpu"]
-            cluster.available_ram = info["remaining_memory_bytes"]
-            cluster.availability = info["availability"]
-        else:
-            dashboard = grafana_helper.create_cluster_dashboard(cluster_name)
-            response = grafana_helper.publish_dashboard(dashboard)
-            grafana_url = f"{context.config['grafana']['host']}{response['url']}"
-            cluster = Cluster(
-                name=cluster_name,
-                location="Unknown",
-                available_cpu=info["remaining_cpu"],
-                available_ram=info["remaining_memory_bytes"],
-                availability=info["availability"],
-                acceleration=False,  # TODO: A mechanism to discover this is needed
-                grafana=grafana_url,
-            )
-            db_session.add(cluster)
+    def fetch_clusters(self) -> Sequence[dict]:
+        """
+        Retrieves all cluster data from Karmada, syncs with the DB,
+        and creates Grafana dashboards if needed.
+        """
+        cluster_dict = []
+        karmada_cluster_info = self.karmada_helper.get_cluster_info()
 
-        db_session.commit()
-        cluster_dict.append(cluster.to_dict())
+        for cluster_name, info in karmada_cluster_info.items():
+            stmt = select(Cluster).where(Cluster.name == cluster_name)
+            cluster = self.db_session.scalars(stmt).first()
+            if cluster is not None:
+                cluster.available_cpu = info["remaining_cpu"]
+                cluster.available_ram = info["remaining_memory_bytes"]
+                cluster.availability = info["availability"]
+            else:
+                dashboard = self.grafana_helper.create_cluster_dashboard(cluster_name)
+                response = self.grafana_helper.publish_dashboard(dashboard)
+                grafana_url = f"{self.config['grafana']['host']}{response['url']}"
+                cluster = Cluster(
+                    name=cluster_name,
+                    location="Unknown",
+                    available_cpu=info["remaining_cpu"],
+                    available_ram=info["remaining_memory_bytes"],
+                    availability=info["availability"],
+                    acceleration=False,  # TODO: A mechanism to discover this is needed
+                    grafana=grafana_url,
+                )
+                self.db_session.add(cluster)
 
-    return cluster_dict
+            self.db_session.commit()
+            cluster_dict.append(cluster.to_dict())
+
+        return cluster_dict

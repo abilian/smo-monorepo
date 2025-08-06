@@ -17,8 +17,4 @@ tmp
 .idea
 /tools
 .DS_Store
-
-# Temp (remove soon)
-/smo-web-connexion/
-/smo-web-flask/
-
+.aider*

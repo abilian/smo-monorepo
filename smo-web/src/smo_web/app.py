@@ -3,8 +3,6 @@ import os
 import connexion
 from connexion.options import SwaggerUIOptions
 
-# from .config import configs
-# from .database import db
 from .error_handlers import register_error_handlers
 
 swagger_ui_options = SwaggerUIOptions(
@@ -42,6 +40,3 @@ def create_app(config_name: str = "") -> connexion.AsyncApp:
     #     db.create_all()
 
     return app
-
-
-app = create_app()

@@ -1,6 +1,5 @@
-from smo_web.util import get_core_context, get_db_session
-
 from smo_core.services import cluster_service
+from smo_web.util import get_core_context, get_db_session
 
 
 def get_clusters():

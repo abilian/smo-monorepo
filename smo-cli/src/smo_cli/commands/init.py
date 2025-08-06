@@ -1,25 +1,24 @@
 import os
 
 import click
-from rich.console import Console
+from dishka import FromDishka
 
-from smo_cli.core.config import Config
-from smo_cli.core.database import DbManager
+from smo_cli.config import Config
+from smo_cli.console import Console
+from smo_cli.database import DbManager
 
 
 @click.command()
-def init():
+def init(console: FromDishka[Console]):
     """Initializes the SMO-CLI environment in ~/.smo/"""
-    _init()
+    do_init(console)
 
 
-def _init():
-    console = Console()
-
+def do_init(console: Console):
     try:
         config = Config.load()
     except FileNotFoundError:
-        console.print("[blue]Creating default configuration...[/blue]")
+        console.info("Creating default configuration...")
         Config.create_default_config()
         config = Config.load()
 
@@ -27,28 +26,27 @@ def _init():
     config_file = config.path
     db_file = config.db_file
 
-    console.print(f"Initializing SMO-CLI environment in [cyan]{smo_dir}[/]...")
+    console.info(f"Initializing SMO-CLI environment in [cyan]{smo_dir}[/]...")
     if not os.path.exists(smo_dir):
         os.makedirs(smo_dir)
-        console.print(f"  -> Created directory: [green]{smo_dir}[/green]")
+        console.info(f"  -> Created directory: [green]{smo_dir}[/green]")
 
     if not os.path.exists(config_file):
         Config.create_default_config()
-        console.print(
+        console.info(
             f"  -> Created default configuration file: [green]{config_file}[/green]"
         )
-        console.print(
+        console.info(
             "  -> [bold yellow]IMPORTANT:[/] Please edit this file to match your environment.",
-            style="yellow",
         )
     else:
-        console.print(
+        console.info(
             f"  -> Configuration file already exists: [yellow]{config_file}[/yellow]"
         )
 
     # Initialize the database using the engine from the core.database module
     db_manager = DbManager(config)
     db_manager.init_db()
-    console.print(f"  -> Ensured local database is created: [green]{db_file}[/green]")
+    console.info(f"  -> Ensured local database is created: [green]{db_file}[/green]")
 
-    console.print("\n[bold green]Initialization complete.[/bold green]")
+    console.success("\nInitialization complete.")

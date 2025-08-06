@@ -7,8 +7,9 @@ from dataclasses import dataclass
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from smo_cli.core.config import Config
 from smo_core.models.base import Base
+
+from .config import Config
 
 
 @dataclass

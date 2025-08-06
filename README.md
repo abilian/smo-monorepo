@@ -11,7 +11,7 @@ This repository contains the full source code for the SMO project, **refactored 
 *   **Optimized Placement & Scaling**: Utilizes mathematical optimization (via CVXPY) to determine the ideal cluster placement for each service and to dynamically adjust replica counts based on real-time metrics.
 *   **Multi-Cluster Orchestration**: Leverages [Karmada](https://karmada.io/) as a robust execution engine to manage resources across a federation of Kubernetes clusters.
 *   **Proactive Observability**: Automatically generates and publishes detailed [Grafana](https://grafana.com/) dashboards and [Prometheus](https://prometheus.io/) alert rules, providing immediate operational visibility for deployed applications.
-*   **Modular Architecture**: The project is cleanly separated into a core logic library (`smo-core`) and distinct user interfaces (`smo-cli` and `smo-web-connexion`), promoting reusability and clean design.
+*   **Modular Architecture**: The project is cleanly separated into a core logic library (`smo-core`) and distinct user interfaces (`smo-cli` and `smo-web`), promoting reusability and clean design.
 
 
 ## Project Architecture
@@ -35,7 +35,7 @@ This monorepo is structured into three distinct Python packages, creating a clea
 ```mermaid
 graph TD
     subgraph User Interfaces
-        A[smo-web-connexion]
+        A[smo-web]
         B[smo-cli]
     end
 
@@ -128,7 +128,7 @@ The web application provides a REST API for the SMO engine. It is designed to ru
 
 #### Configuration
 
-The web app uses environment variables for configuration, typically loaded from a `.env` file. You can create a `config/flask.env` file within the `smo-web-connexion` directory to configure the database connection, Karmada path, etc.
+The web app uses environment variables for configuration, typically loaded from a `.env` file. You can create a `config/flask.env` file within the `smo-web` directory to configure the database connection, Karmada path, etc.
 
 #### Running Locally for Development
 
@@ -136,7 +136,7 @@ The recommended way to run the web app for development is with `uvicorn`, which 
 
 ```bash
 # Navigate to the web package directory
-cd smo-web-connexion
+cd smo-web
 
 # Run the uvicorn server
 uvicorn smo_web.app:app --reload
@@ -150,10 +150,10 @@ For production, use a process manager like Gunicorn with the Uvicorn worker clas
 
 ```bash
 # Build the Docker image
-docker build -t smo-web-connexion:latest -f smo-web-connexion/Dockerfile .
+docker build -t smo-web:latest -f smo-web/Dockerfile .
 
 # Run the container (example)
-docker run -p 8000:8000 -v ~/.kube:/root/.kube smo-web-connexion:latest
+docker run -p 8000:8000 -v ~/.kube:/root/.kube smo-web:latest
 ```
 *(Note: You will need a running PostgreSQL instance and will need to configure the container's environment variables to connect to it.)*
 

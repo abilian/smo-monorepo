@@ -1,12 +1,10 @@
 import time
 
 import click
-from rich.console import Console
+from dishka.integrations.click import FromDishka
 
-from smo_cli.core.context import CliContext, pass_context
-from smo_core.services import scaler_service
-
-console = Console()
+from smo_cli.console import Console
+from smo_core.services.scaler_service import ScalerService
 
 
 @click.group()
@@ -46,9 +44,9 @@ def scaler():
     default=60,
     help="Seconds to wait after a scaling action.",
 )
-@pass_context
 def run(
-    ctx: CliContext,
+    scaler_service: FromDishka[ScalerService],
+    console: FromDishka[Console],
     target_deployment: str,
     target_namespace: str,
     up_threshold: float,
@@ -82,18 +80,14 @@ def run(
                 style="dim",
             )
         else:
-            # Ensure context is active if needed, though this service doesn't use DB
-            with ctx.db_session():
-                result = scaler_service.run_threshold_scaler_iteration(
-                    karmada=ctx.core_context.karmada,
-                    prometheus=ctx.core_context.prometheus,
-                    target_deployment=target_deployment,
-                    target_namespace=target_namespace,
-                    scale_up_threshold=up_threshold,
-                    scale_down_threshold=down_threshold,
-                    scale_up_replicas=up_replicas,
-                    scale_down_replicas=down_replicas,
-                )
+            result = scaler_service.run_threshold_scaler_iteration(
+                target_deployment=target_deployment,
+                target_namespace=target_namespace,
+                scale_up_threshold=up_threshold,
+                scale_down_threshold=down_threshold,
+                scale_up_replicas=up_replicas,
+                scale_down_replicas=down_replicas,
+            )
 
             action = result.get("action")
             if action in ("scale_up", "scale_down"):

@@ -101,17 +101,17 @@ def push_artifacts(c: Context):
     print("Artifacts pushed successfully.")
 
 
-@task
-def deploy(c: Context):
-    """Deploy the HDAR artifacts."""
-    print("Deploying HDAR artifacts...")
-    c.run(f"hdarctl deploy {HDAR_URL}/{PROJECT}/image-detection-graph-1.0.0.tar.gz")
-    print("Deployment completed successfully.")
-
-
-@task
-def undeploy(c: Context):
-    """Undeploy the HDAR artifacts."""
-    print("Undeploying HDAR artifacts...")
-    c.run(f"hdarctl undeploy {HDAR_URL}/{PROJECT}/image-detection-graph-1.0.0.tar.gz")
-    print("Undeployment completed successfully.")
+# @task
+# def deploy(c: Context):
+#     """Deploy the HDAR artifacts."""
+#     print("Deploying HDAR artifacts...")
+#     c.run(f"hdarctl deploy {HDAR_URL}/{PROJECT}/image-detection-graph-1.0.0.tar.gz")
+#     print("Deployment completed successfully.")
+#
+#
+# @task
+# def undeploy(c: Context):
+#     """Undeploy the HDAR artifacts."""
+#     print("Undeploying HDAR artifacts...")
+#     c.run(f"hdarctl undeploy {HDAR_URL}/{PROJECT}/image-detection-graph-1.0.0.tar.gz")
+#     print("Undeployment completed successfully.")

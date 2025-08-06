@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
 
-from smo_cli.commands.init import _init
+from smo_cli.commands.init import do_init
+from smo_cli.console import Console
 
 
 def test_init(tmp_path: Path) -> None:
@@ -11,6 +12,6 @@ def test_init(tmp_path: Path) -> None:
     smo_dir = tmp_path / ".smo"
     os.environ["SMO_DIR"] = str(smo_dir)
 
-    _init()
+    do_init(console=Console())
     assert (smo_dir / "config.yaml").exists()
     assert (smo_dir / "smo.db").exists()

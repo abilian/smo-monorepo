@@ -10,7 +10,7 @@ from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.orm.attributes import Mapped
 from sqlalchemy.types import JSON
 
-from ..base import Base
+from smo_core.models.base import Base
 
 JsonType = JSON().with_variant(JSONB, "postgresql")
 

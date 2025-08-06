@@ -26,6 +26,7 @@ clean:
 	cd smo-cli && adt clean
 	cd smo-web && adt clean
 	rm -rf examples/brussels-demo/*.tar.gz
+	rm -rf .nox */.nox
 
 
 .PHONY: format
@@ -34,6 +35,8 @@ format:
 	cd smo-core && isort .
 	cd smo-cli && isort .
 	cd smo-web && isort .
+	cd smo-ui && isort .
+	cd smo-sdk && isort .
 	ruff format
 
 

@@ -1,14 +1,9 @@
-from typing import Iterable
-
 import click
-from rich.console import Console
+from dishka.integrations.click import FromDishka
 from rich.table import Table
 
-from smo_cli.core.context import CliContext, pass_context
-from smo_core.models.cluster import Cluster
-from smo_core.services import cluster_service
-
-console = Console()
+from smo_cli.console import Console
+from smo_core.services.cluster_service import ClusterService
 
 
 @click.group()
@@ -18,34 +13,34 @@ def cluster():
 
 
 @cluster.command()
-@pass_context
-def sync(ctx: CliContext):
+def sync(
+    console: FromDishka[Console],
+    cluster_service: FromDishka[ClusterService],
+):
     """Fetches cluster info from Karmada and syncs with the local DB."""
-    console.print("Syncing cluster information from Karmada...", style="cyan")
-    with ctx.db_session() as session:
-        clusters = cluster_service.fetch_clusters(ctx.core_context, session)
-
-    console.print(f"[green]Successfully synced {len(clusters)} cluster(s).[/green]")
-    show_clusters(clusters)
+    console.info("Syncing cluster information from Karmada...")
+    clusters = cluster_service.fetch_clusters()
+    console.success(f"Successfully synced {len(clusters)} cluster(s).")
+    table = make_table(clusters)
+    console.print(table)
 
 
 @cluster.command(name="list")
-@pass_context
-def list_clusters(ctx: CliContext):
+def list_clusters(
+    console: FromDishka[Console],
+    cluster_service: FromDishka[ClusterService],
+):
     """Lists all clusters known to SMO-CLI from the local DB."""
-    with ctx.db_session() as session:
-        clusters = session.query(Cluster).all()
-
+    clusters = cluster_service.list_clusters()
     if not clusters:
-        console.print(
-            "No clusters found. Run 'smo-cli cluster sync' first.", style="yellow"
-        )
+        console.warning("No clusters found. Run 'smo-cli cluster sync' first.")
         return
 
-    show_clusters(clusters)
+    table = make_table(clusters)
+    console.print(table)
 
 
-def show_clusters(clusters: Iterable[Cluster | dict]):
+def make_table(clusters):
     table = Table(title="Clusters")
     table.add_column("Name", style="cyan")
     table.add_column("Location", style="white")
@@ -53,7 +48,6 @@ def show_clusters(clusters: Iterable[Cluster | dict]):
     table.add_column("RAM (Avail)", style="yellow")
     table.add_column("Status", style="green")
     table.add_column("GPU", style="blue")
-
     for c in clusters:
         if not isinstance(c, dict):
             c = c.to_dict()
@@ -69,4 +63,4 @@ def show_clusters(clusters: Iterable[Cluster | dict]):
             availability,
             acceleration,
         )
-    console.print(table)
+    return table

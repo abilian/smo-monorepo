@@ -1,6 +1,5 @@
+from smo_core.services import graph_service
 from smo_web.util import get_core_context, get_db_session
-
-from smo_core.services.hdag import graph_service
 
 
 def get_all_for_project(project):

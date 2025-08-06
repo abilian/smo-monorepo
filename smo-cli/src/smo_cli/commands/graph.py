@@ -3,17 +3,19 @@ from typing import Iterable
 
 import click
 import yaml
-from rich.console import Console
+from dishka.integrations.click import FromDishka
 from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.table import Table
 
-from smo_cli.core.context import CliContext, pass_context
-from smo_core.models.hdag.graph import Graph
-from smo_core.services.hdag import graph_service
-from .exceptions import CliException
+from smo_cli.console import Console
+from smo_core.models.graph import Graph
+from smo_core.services.graph_service import (
+    GraphService,
+    get_graph_from_artifact,
+)
 
-console = Console()
+from .exceptions import CliException
 
 
 @click.group()
@@ -25,69 +27,68 @@ def graph():
 @graph.command()
 @click.argument("descriptor", type=click.STRING)
 @click.option("--project", required=True, help="The project/namespace for the graph.")
-@pass_context
-def deploy(ctx: CliContext, descriptor: str, project: str):
+def deploy(
+    descriptor: str,
+    project: str,
+    console: FromDishka[Console],
+    graph_service: FromDishka[GraphService],
+):
     """Deploys a new HDAG from a file or OCI URL."""
-    console.print(
-        f"Deploying graph from [cyan]'{descriptor}'[/cyan] into project [magenta]'{project}'[/magenta]..."
-    )
+    console.info(f"Deploying graph from '{descriptor}' into project '{project}'...")
     graph_data = get_graph_data(descriptor)
 
     if not graph_data or "hdaGraph" not in graph_data:
-        console.print(
-            "[bold red]Error:[/] Invalid HDAG descriptor format.", style="red"
-        )
+        console.error("Error: Invalid HDAG descriptor format.")
         sys.exit(1)
 
-    with ctx.db_session() as session:
-        graph_service.deploy_graph(
-            ctx.core_context, session, project, graph_data["hdaGraph"]
-        )
+    graph_service.deploy_graph(project, graph_data["hdaGraph"])
 
-    console.print(
-        f"[green]Successfully triggered deployment for graph '{graph_data['hdaGraph']['id']}'.[/green]"
+    console.success(
+        f"Successfully triggered deployment for graph '{graph_data['hdaGraph']['id']}'."
     )
-    console.print("Use 'smo-cli graph list' to check status.")
+    console.info("Use 'smo-cli graph list' to check status.")
 
 
 @graph.command(name="list")
 @click.option("--project", help="Filter graphs by project.")
-@pass_context
-def list_graphs(ctx: CliContext, project: str):
+def list_graphs(
+    project: str,
+    graph_service: FromDishka[GraphService],
+    console: FromDishka[Console],
+):
     """Lists all deployed graphs."""
     try:
-        with ctx.db_session() as session:
+        graphs = graph_service.fetch_project_graphs(project) if project else []
+        if not project:
+            # This part of the logic needs to be on the service
+            graphs = graph_service.db_session.query(Graph).all()
+
+        if not graphs:
+            msg = "No graphs found."
             if project:
-                graphs = graph_service.fetch_project_graphs(session, project)
-            else:
-                graphs = session.query(Graph).all()
+                msg += f" in project '{project}'."
+            console.print(msg, style="yellow")
+            return
 
-            if not graphs:
-                msg = "No graphs found."
-                if project:
-                    msg += f" in project '{project}'."
-                console.print(msg, style="yellow")
-                return
-
-            show_graphs(graphs)
+        show_graphs(graphs, console)
     except Exception as e:
-        console.print(f"[bold red]Error listing graphs:[/] {e}")
-        raise
+        console.error(f"Error listing graphs:\n[black]{e}[/black]")
+        sys.exit(1)
 
 
 @graph.command()
 @click.argument("name", type=click.STRING)
-@pass_context
-def describe(ctx: CliContext, name: str):
+def describe(
+    name: str, graph_service: FromDishka[GraphService], console: FromDishka[Console]
+):
     """Shows detailed information for a specific graph."""
-    with ctx.db_session() as session:
-        graph_obj = graph_service.fetch_graph(session, name)
+    graph_obj = graph_service.fetch_graph(name)
 
-        if not graph_obj:
-            msg = f"Graph '{name}' not found."
-            raise CliException(msg)
+    if not graph_obj:
+        msg = f"Graph '{name}' not found."
+        raise CliException(msg)
 
-        g = graph_obj.to_dict()
+    g = graph_obj.to_dict()
 
     panel_content = (
         f"[bold cyan]Name:[/] {g['name']}\n"
@@ -100,7 +101,7 @@ def describe(ctx: CliContext, name: str):
     )
 
     if services := g.get("services"):
-        show_services(services)
+        show_services(services, console)
 
     if hda_graph := g.get("hdaGraph"):
         yaml_content = yaml.dump(hda_graph)
@@ -115,8 +116,9 @@ def describe(ctx: CliContext, name: str):
 
 @graph.command()
 @click.argument("name", type=click.STRING)
-@pass_context
-def remove(ctx: CliContext, name: str):
+def remove(
+    name: str, console: FromDishka[Console], graph_service: FromDishka[GraphService]
+):
     """Removes a graph completely from SMO and the cluster."""
     msg = (
         f"Are you sure you want to permanently remove graph '{name}'? "
@@ -125,35 +127,28 @@ def remove(ctx: CliContext, name: str):
     if not click.confirm(msg, abort=True):
         return
 
-    console.print(f"Removing graph [cyan]'{name}'[/cyan]...", style="red")
-
-    with ctx.db_session() as session:
-        graph_service.remove_graph(ctx.core_context, session, name)
-
-    console.print(f"[green]Graph '{name}' removed successfully.[/green]")
+    console.info(f"Removing graph '{name}'...")
+    graph_service.remove_graph(name)
+    console.success(f"Graph '{name}' removed successfully.")
 
 
 @graph.command(name="re-place")
 @click.argument("name", type=click.STRING)
-@pass_context
-def re_place(ctx: CliContext, name: str):
+def re_place(
+    name: str, console: FromDishka[Console], graph_service: FromDishka[GraphService]
+):
     """Triggers placement optimization for a deployed graph."""
-    console.print(
-        f"Triggering re-placement for graph [cyan]'{name}'[/cyan]...", style="cyan"
-    )
-    with ctx.db_session() as session:
-        graph_service.trigger_placement(ctx.core_context, session, name)
-
-    console.print(
-        f"[green]Re-placement for graph '{name}' completed successfully.[/green]"
-    )
-    console.print("Check new placement with 'smo-cli graph describe'.")
+    console.info(f"Triggering re-placement for graph '{name}'...")
+    graph_service.trigger_placement(name)
+    console.success(f"Re-placement for graph '{name}' completed successfully.")
+    console.info("Check new placement with 'smo-cli graph describe'.")
 
 
 @graph.command()
 @click.argument("name", type=click.STRING)
-@pass_context
-def stop(ctx: CliContext, name: str):
+def stop(
+    name: str, console: FromDishka[Console], graph_service: FromDishka[GraphService]
+):
     """Stops a running graph (uninstalls artifacts)."""
     msg = (
         f"Are you sure you want to stop graph '{name}'? "
@@ -162,21 +157,20 @@ def stop(ctx: CliContext, name: str):
     if not click.confirm(msg, abort=True):
         return
 
-    console.print(f"Stopping graph [cyan]'{name}'[/cyan]...", style="yellow")
-    with ctx.db_session() as session:
-        graph_service.stop_graph(ctx.core_context, session, name)
-    console.print(f"[green]Graph '{name}' stopped successfully.[/green]")
+    console.info(f"Stopping graph '{name}'...")
+    graph_service.stop_graph(name)
+    console.success(f"Graph '{name}' stopped successfully.")
 
 
 @graph.command()
 @click.argument("name", type=click.STRING)
-@pass_context
-def start(ctx: CliContext, name: str):
+def start(
+    name: str, console: FromDishka[Console], graph_service: FromDishka[GraphService]
+):
     """Starts a stopped graph by reinstalling its artifacts."""
-    console.print(f"Starting graph [cyan]'{name}'[/cyan]...", style="green")
-    with ctx.db_session() as session:
-        graph_service.start_graph(ctx.core_context, session, name)
-    console.print(f"[green]Graph '{name}' started successfully.[/green]")
+    console.info(f"Starting graph '{name}'...")
+    graph_service.start_graph(name)
+    console.success(f"Graph '{name}' started successfully.")
 
 
 #
@@ -184,10 +178,10 @@ def start(ctx: CliContext, name: str):
 #
 def get_graph_data(descriptor: str) -> dict:
     if descriptor.startswith("oci://"):
-        descriptor = "http://" + descriptor[len("oci://") :]
+        return get_graph_from_artifact(descriptor)
 
     if descriptor.startswith("http://") or descriptor.startswith("https://"):
-        return graph_service.get_graph_from_artifact(descriptor)
+        return get_graph_from_artifact(descriptor)
 
     if descriptor.endswith(".yaml") or descriptor.endswith(".yml"):
         with open(descriptor, "r") as f:
@@ -197,7 +191,7 @@ def get_graph_data(descriptor: str) -> dict:
     raise ValueError(f"Invalid HDAG descriptor: {descriptor}")
 
 
-def show_graphs(graphs: Iterable[Graph | dict]) -> None:
+def show_graphs(graphs: Iterable[Graph | dict], console: Console) -> None:
     table = Table(title="Deployed Graphs")
     table.add_column("Name", style="cyan")
     table.add_column("Project", style="magenta")
@@ -215,7 +209,7 @@ def show_graphs(graphs: Iterable[Graph | dict]) -> None:
     console.print(table)
 
 
-def show_services(services: Iterable[dict]) -> None:
+def show_services(services: Iterable[dict], console: Console) -> None:
     table = Table(title="Services")
     table.add_column("Service Name", style="cyan")
     table.add_column("Status", style="yellow")

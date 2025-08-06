@@ -2,7 +2,7 @@
 
 This is the official Python SDK for the Synergetic Meta-Orchestrator (SMO) REST API.
 
-This SDK is in part auto-generated from the SMO's [OpenAPI specification](https://gitlab.eclipse.org/eclipse-research-labs/nephele-project/opencall-2/h3ni/smo-monorepo/-/blob/main/smo-web-connexion/src/smo_web/swagger/openapi.yaml), ensuring it is always up-to-date and provides complete coverage of the API's features. It provides a simple, pythonic interface that handles all the low-level HTTP requests, data serialization, and error handling for you.
+This SDK is in part auto-generated from the SMO's [OpenAPI specification](https://gitlab.eclipse.org/eclipse-research-labs/nephele-project/opencall-2/h3ni/smo-monorepo/-/blob/main/smo-web/src/smo_web/swagger/openapi.yaml), ensuring it is always up-to-date and provides complete coverage of the API's features. It provides a simple, pythonic interface that handles all the low-level HTTP requests, data serialization, and error handling for you.
 
 ## Core Features
 
@@ -136,7 +136,7 @@ async def main():
 
     print("Fetching clusters asynchronously...")
     clusters = await clusters_api.asyncio(client=async_client)
-    
+
     if isinstance(clusters, list):
         for cluster in clusters:
             print(f"  - Async Cluster: {cluster.name}")
@@ -156,7 +156,7 @@ If the SMO REST API is updated, you can regenerate this SDK to include the chang
 # pip install openapi-python-client
 
 # Regenerate the SDK from the SMO's OpenAPI specification
-openapi-python-client generate --path /path/to/smo-monorepo/smo-web-connexion/src/smo_web/swagger/openapi.yaml --output-path .
+openapi-python-client generate --path /path/to/smo-monorepo/smo-web/src/smo_web/swagger/openapi.yaml --output-path .
 ```
 
 Please re-run the usual Python code formatters (`isort`, `ruff format`, etc.) after regeneration to ensure the code is properly formatted.
