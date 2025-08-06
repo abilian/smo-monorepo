@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from dishka.integrations.fastapi import FromDishka
+from smo_core.context import SmoCoreContext
 from smo_core.services import graph_service
-from smo_ui.extensions import templates
+from smo_ui.extensions import templates, get_db, get_smo_context
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/graphs")
 

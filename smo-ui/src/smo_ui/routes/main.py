@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from dishka.integrations.fastapi import FromDishka
-from smo_core.models import Cluster, Graph
 from smo_core.services import cluster_service, graph_service
 from smo_ui.extensions import templates
 
@@ -14,17 +13,7 @@ async def index(
     graph_service: FromDishka[graph_service.GraphService],
     cluster_service: FromDishka[cluster_service.ClusterService],
 ):
-    num_projects = graph_service.count_projects()
-    num_graphs = db.query(func.count(Graph.id)).scalar()
-    num_active_graphs = (
-        db.query(func.count(Graph.id)).filter(Graph.status == "Running").scalar()
-    )
-    num_clusters = db.query(func.count(Cluster.id)).scalar()
-    num_ready_clusters = (
-        db.query(func.count(Cluster.id)).filter(Cluster.availability.is_(True)).scalar()
-    )
-
-    stats = {
+    stats = graph_service.get_dashboard_stats()
         "projects": num_projects,
         "graphs": num_graphs,
         "active_graphs": num_active_graphs,
