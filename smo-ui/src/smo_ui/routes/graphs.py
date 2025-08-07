@@ -8,6 +8,15 @@ from smo_ui.extensions import templates
 router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
 
 
+@router.get("/", response_class=HTMLResponse)
+async def graphs_index(
+    request: Request,
+    graph_service: FromDishka[GraphService],
+):
+    # TODO: implement view
+    pass
+
+
 @router.get("/{project_name}", response_class=HTMLResponse)
 async def graphs(
     request: Request,

@@ -72,15 +72,15 @@ class InfraProvider(Provider):
     def get_prometheus(self, config: Config) -> PrometheusHelper:
         return PrometheusHelper(
             config.get("prometheus_host"),
-            time_window=str(config.get("scaling", "interval_seconds")),
+            time_window=str(config.get("scaling.interval_seconds")),
         )
 
     @provide
     def get_grafana(self, config: Config) -> GrafanaHelper:
         return GrafanaHelper(
-            config.get("grafana", "host"),
-            config.get("grafana", "username"),
-            config.get("grafana", "password"),
+            config.get("grafana.host"),
+            config.get("grafana.username"),
+            config.get("grafana.password"),
         )
 
 
