@@ -1,6 +1,6 @@
 from smo_core.context import SmoCoreContext
 from smo_core.models import Cluster
-from smo_core.services.graph_service import fetch_graph
+from smo_core.services.graph_service import GraphService
 from smo_core.utils.placement import swap_placement
 from smo_core.utils.scaling import decide_replicas
 
@@ -10,7 +10,14 @@ from smo_core.utils.scaling import decide_replicas
 #
 def run_scaling_iteration(context: SmoCoreContext, db_session, name):
     """Performs a single, synchronous scaling decision."""
-    graph = fetch_graph(db_session, name)
+    graph_service = GraphService(
+        db_session=db_session,
+        karmada_helper=context.karmada,
+        grafana_helper=context.grafana,
+        prom_helper=context.prometheus,
+        config=context.config,
+    )
+    graph = graph_service.fetch_graph(name)
     if not graph:
         raise ValueError(f"Graph '{name}' not found.")
 
