@@ -12,7 +12,7 @@ def test_graph_deploy_from_file(
     # Mock the graph to exist after deployment
     mock_graph = {"name": "test-graph", "project": "test-proj"}
     mock_graph_service.deploy_graph.return_value = mock_graph
-    
+
     result = runner.invoke(
         main, ["graph", "deploy", "--project", "test-proj", hdag_file]
     )
@@ -34,7 +34,7 @@ def test_graph_deploy_from_oci(runner, tmp_smo_dir: Path, mocker, mock_graph_ser
     # Mock the artifact fetching
     mocker.patch(
         "smo_cli.commands.graph.get_graph_from_artifact",
-        return_value={"hdaGraph": {"id": "oci-graph"}}
+        return_value={"hdaGraph": {"id": "oci-graph"}},
     )
 
     result = runner.invoke(main, ["graph", "deploy", "--project", "oci-proj", oci_url])
@@ -52,7 +52,7 @@ def test_graph_list(runner, tmp_smo_dir: Path, mock_graph_service, mocker):
         "name": "test-graph",
         "project": "test-proj",
         "status": "Running",
-        "services": []
+        "services": [],
     }
     mock_graph_service.fetch_project_graphs.return_value = [mock_graph]
 
@@ -68,7 +68,7 @@ def test_graph_remove(runner, tmp_smo_dir: Path, mock_graph_service):
     # Mock the graph to exist
     mock_graph = {"name": "my-graph", "project": "test-proj"}
     mock_graph_service.fetch_graph.return_value = mock_graph
-    
+
     result = runner.invoke(
         main,
         ["graph", "remove", "my-graph"],
@@ -85,7 +85,7 @@ def test_graph_remove_abort(runner, tmp_smo_dir, mock_graph_service):
     # Mock the graph to exist
     mock_graph = {"name": "my-graph", "project": "test-proj"}
     mock_graph_service.fetch_graph.return_value = mock_graph
-    
+
     result = runner.invoke(
         main,
         ["graph", "remove", "my-graph"],
@@ -105,9 +105,9 @@ def test_graph_re_place(runner, tmp_smo_dir, mock_graph_service):
     # Mock the graph to exist
     mock_graph = {"name": "my-graph", "project": "test-proj"}
     mock_graph_service.fetch_graph.return_value = mock_graph
-    
+
     result = runner.invoke(main, ["graph", "re-place", "my-graph"])
-    assert result.exit_code == 0 
+    assert result.exit_code == 0
     assert "Triggering re-placement" in result.output
     assert "my-graph" in result.output
     mock_graph_service.trigger_placement.assert_called_once()

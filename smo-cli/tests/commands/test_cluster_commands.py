@@ -13,10 +13,12 @@ def mock_cluster_service(mocker):
 
 def test_cluster_sync(runner, tmp_smo_dir: Path, mock_cluster_service, mocker):
     """Tests 'smo-cli cluster sync'."""
-    
+
     # Mock Grafana calls to avoid 401 errors
-    mocker.patch('smo_core.helpers.grafana.grafana_helper.GrafanaHelper.publish_dashboard')
-    
+    mocker.patch(
+        "smo_core.helpers.grafana.grafana_helper.GrafanaHelper.publish_dashboard"
+    )
+
     # Configure the mock to return some data
     mock_cluster_service.fetch_clusters.return_value = [
         {
