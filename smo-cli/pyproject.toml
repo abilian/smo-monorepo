@@ -13,6 +13,13 @@ dependencies = [
     "pytest-asyncio>=1.1.0",
 ]
 
+[dependency-groups]
+dev = [
+    "abilian-devtools>=0.7.7",
+    "coverage>=7.9.2",
+    "pytest",
+    "pytest-mock",
+]
 
 [build-system]
 requires = ["uv-build>=0.8.4,<0.9.0"]
@@ -25,17 +32,12 @@ module-root = "src"
 [project.scripts]
 smo-cli = "smo_cli.cli:main"
 
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-mock",
-    "hatchling",
-]
-
+#
+# Testing configuration
+#
 [tool.pytest.ini_options]
 pythonpath = "."
-addopts = "-v -s"
-
+addopts = "-s"
 
 [tool.coverage.run]
 #branch = true
@@ -60,11 +62,4 @@ exclude_also = [
 
     # Don't complain about abstract methods, they aren't run:
     "@(abc\\.)?abstractmethod",
-]
-
-
-[dependency-groups]
-dev = [
-    "abilian-devtools>=0.7.7",
-    "coverage>=7.9.2",
 ]
