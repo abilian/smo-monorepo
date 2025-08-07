@@ -1,11 +1,9 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy.orm import Session
 
-from smo_core.context import SmoCoreContext
 from smo_core.services.graph_service import GraphService
-from smo_ui.extensions import get_db, get_smo_context, templates
+from smo_ui.extensions import templates
 
 router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
 
@@ -14,10 +12,9 @@ router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
 async def graphs(
     request: Request,
     project_name: str,
-    db: Session = Depends(get_db),
-    context: SmoCoreContext = Depends(get_smo_context),
+    graph_service: FromDishka[GraphService],
 ):
-    graphs_list = graph_service.fetch_project_graphs(context, db, project_name)
+    graphs_list = graph_service.fetch_project_graphs(project_name)
     return templates.TemplateResponse(
         request,
         "graphs.html",
@@ -41,12 +38,11 @@ async def deploy_post(
     request: Request,
     descriptor_url: str = Form(..., alias="descriptor-url"),
     project_name: str = Form(..., alias="project-name"),
-    db: Session = Depends(get_db),
-    context: SmoCoreContext = Depends(get_smo_context),
+    graph_service: FromDishka[GraphService],
 ):
     try:
         graph_descriptor = graph_service.get_graph_from_artifact(descriptor_url)
-        graph_service.deploy_graph(context, db, project_name, graph_descriptor)
+        graph_service.deploy_graph(project_name, graph_descriptor)
         graph_id = graph_descriptor["id"]
         # Redirect to the new graph's detail page
         return RedirectResponse(
@@ -69,8 +65,12 @@ async def deploy_post(
 
 
 @router.get("/{graph_id}", response_class=HTMLResponse)
-async def graph_details(request: Request, graph_id: str, db: Session = Depends(get_db)):
-    graph = graph_service.fetch_graph(db, graph_id)
+async def graph_details(
+    request: Request,
+    graph_id: str,
+    graph_service: FromDishka[GraphService],
+):
+    graph = graph_service.fetch_graph(graph_id)
     return templates.TemplateResponse(
         request,
         "graph_details.html",

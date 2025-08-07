@@ -21,27 +21,3 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine)
-
-
-# --- Dependencies ---
-def get_db():
-    """FastAPI dependency to get a DB session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def get_smo_context() -> SmoCoreContext:
-    """FastAPI dependency to get the SMO Core context."""
-    # Mock the KarmadaHelper to avoid needing real kubeconfig
-    mock_karmada = MockKarmadaHelper()
-    return SmoCoreContext(
-        config=config_data,
-        karmada=mock_karmada,
-        prometheus=PrometheusHelper(prometheus_host="http://test-prometheus"),
-        grafana=GrafanaHelper(
-            grafana_host="http://test-grafana", username="test", password="test"
-        ),
-    )
