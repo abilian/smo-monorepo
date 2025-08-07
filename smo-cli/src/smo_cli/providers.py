@@ -1,22 +1,19 @@
 """
-This module contains all the Dishka Providers for the SMO-CLI application.
+This module contains the Dishka Providers for the SMO-CLI application.
 
-Providers are like instruction manuals that teach the DI container how to create
-and manage the lifecycle of our application's services and components.
+Providers instruct the DI container how to create and manage the lifecycle of our application's services and components.
 """
 
 from collections.abc import Iterable
 
 import click
 from dishka import Provider, Scope, from_context, provide
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 # --- Core Helpers and Services ---
 from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
-from smo_core.services.cluster_service import ClusterService
-from smo_core.services.graph_service import GraphService
-from smo_core.services.scaler_service import ScalerService
+from smo_core.services import ClusterService, GraphService, ScalerService
 
 # --- Core Application Components ---
 from .config import Config
@@ -57,10 +54,13 @@ class DbProvider(Provider):
     scope = Scope.APP
 
     @provide
-    def get_db_session(self, config: Config) -> Iterable[Session]:
+    def get_db_engine(self, config: Config) -> Engine:
+        db_url = config.get("db.url")
+        return create_engine(db_url)
+
+    @provide
+    def get_db_session(self, engine: Engine) -> Iterable[Session]:
         """Provides a SQLAlchemy session that is automatically closed after use."""
-        db_file = config.db_file
-        engine = create_engine(f"sqlite:///{db_file}")
         session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         session = session_factory()
         try:
@@ -84,16 +84,16 @@ class InfraProvider(Provider):
         console.debug("Initializing PrometheusHelper...")
         return PrometheusHelper(
             config.get("prometheus_host"),
-            time_window=str(config.get("scaling", "interval_seconds")),
+            time_window=str(config.get("scaling.interval_seconds")),
         )
 
     @provide
     def get_grafana(self, config: Config, console: Console) -> GrafanaHelper:
         console.debug("Initializing GrafanaHelper...")
         return GrafanaHelper(
-            config.get("grafana", "host"),
-            config.get("grafana", "username"),
-            config.get("grafana", "password"),
+            config.get("grafana.host"),
+            config.get("grafana.username"),
+            config.get("grafana.password"),
         )
 
 

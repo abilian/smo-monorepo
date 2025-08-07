@@ -10,7 +10,7 @@ from .commands.scaler import scaler
 from .providers import main_providers
 
 
-@click.group()
+@click.group
 @click.option(
     "-v",
     "--verbose",

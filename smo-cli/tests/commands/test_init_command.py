@@ -15,7 +15,9 @@ def test_init_command(runner: CliRunner, tmp_path: Path) -> None:
     os.environ["SMO_DIR"] = str(smo_dir)
     result = runner.invoke(main, ["init"])
 
+    print(result.output)
     assert result.exit_code == 0
+
     assert "SUCCESS:" in result.output
     assert "Initialization complete" in result.output
     assert (smo_dir / "config.yaml").exists()

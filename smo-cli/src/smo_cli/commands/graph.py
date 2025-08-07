@@ -57,23 +57,16 @@ def list_graphs(
     console: FromDishka[Console],
 ):
     """Lists all deployed graphs."""
-    try:
-        graphs = graph_service.get_graphs(project) if project else []
-        if not project:
-            # This part of the logic needs to be on the service
-            graphs = graph_service.db_session.query(Graph).all()
+    graphs = graph_service.get_graphs(project)
 
-        if not graphs:
-            msg = "No graphs found."
-            if project:
-                msg += f" in project '{project}'."
-            console.print(msg, style="yellow")
-            return
+    if not graphs:
+        msg = "No graphs found."
+        if project:
+            msg += f" in project '{project}'."
+        console.print(msg, style="yellow")
+        return
 
-        show_graphs(graphs, console)
-    except Exception as e:
-        console.error(f"Error listing graphs:\n[black]{e}[/black]")
-        sys.exit(1)
+    show_graphs(graphs, console)
 
 
 @graph.command()

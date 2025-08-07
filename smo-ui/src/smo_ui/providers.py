@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from devtools import debug
 from dishka import Provider, Scope, provide
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from smo_core.context import SmoCoreContext
@@ -43,14 +43,16 @@ class ConfigProvider(Provider):
 class DbProvider(Provider):
     """Manages the database connection lifecycle."""
 
-    scope = Scope.REQUEST
-
-    @provide
-    def get_db_session(self, config: Config) -> Iterable[Session]:
-        """Provides a SQLAlchemy session that is automatically closed after use."""
+    @provide(scope=Scope.APP)
+    def get_db_engine(self, config: Config) -> Engine:
         db_file = config.data["db_file"]
         engine = create_engine(f"sqlite:///{db_file}")
         Base.metadata.create_all(engine)
+        return engine
+
+    @provide(scope=Scope.REQUEST)
+    def get_db_session(self, engine: Engine) -> Iterable[Session]:
+        """Provides a SQLAlchemy session that is automatically closed after use."""
         session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         session = session_factory()
         try:

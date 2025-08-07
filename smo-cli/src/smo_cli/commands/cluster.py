@@ -6,20 +6,22 @@ from smo_cli.console import Console
 from smo_core.services.cluster_service import ClusterService
 
 
-@click.group()
+@click.group
 def cluster():
     """Commands for managing cluster information."""
     pass
 
 
-@cluster.command()
+@cluster.command
 def sync(
     console: FromDishka[Console],
     cluster_service: FromDishka[ClusterService],
 ):
     """Fetches cluster info from Karmada and syncs with the local DB."""
     console.info("Syncing cluster information from Karmada...")
+
     clusters = cluster_service.fetch_clusters()
+
     console.success(f"Successfully synced {len(clusters)} cluster(s).")
     table = make_table(clusters)
     console.print(table)
@@ -32,6 +34,7 @@ def list_clusters(
 ):
     """Lists all clusters known to SMO-CLI from the local DB."""
     clusters = cluster_service.list_clusters()
+
     if not clusters:
         console.warning("No clusters found. Run 'smo-cli cluster sync' first.")
         return

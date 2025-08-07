@@ -1,4 +1,3 @@
-
 from smo_core.helpers.grafana.grafana_template import (
     create_basic_dashboard,
     create_dashboard_variables,

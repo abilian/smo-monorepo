@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-
 from smo_core.utils.scaling import decide_replicas, scaling_loop
 
 

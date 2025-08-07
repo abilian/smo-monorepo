@@ -8,15 +8,14 @@ from typing import Any
 import yaml
 
 # --- Constants ---
-# Use uppercase for constants for better readability.
 DEFAULT_SMO_DIR = Path.home() / ".smo"
 CONFIG_FILENAME = "config.yaml"
 DB_FILENAME = "smo.db"
 
 
+#
 # --- Main Configuration Class ---
-
-
+#
 @dataclass
 class Config:
     """
@@ -25,20 +24,11 @@ class Config:
 
     Attributes:
         path (Path): The full path to the loaded configuration file.
-        smo_dir (Path): The root directory for SMO data (e.g., ~/.smo).
-        db_file (Path): The full path to the SQLite database file.
         data (dict): The raw dictionary of configuration data loaded from the file.
     """
 
-    path: Path
+    path: Path | None
     data: dict = field(repr=False)  # Don't show the full data dict in repr
-    smo_dir: Path = field(init=False)
-    db_file: Path = field(init=False)
-
-    def __post_init__(self):
-        """Set derived path attributes after the object is initialized."""
-        self.smo_dir = self.path.parent
-        self.db_file = self.smo_dir / DB_FILENAME
 
     @classmethod
     def load(cls, path: Path | str | None = None) -> Config:
@@ -63,14 +53,16 @@ class Config:
         config_path = Path(path)
 
         if not config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found at {config_path}.")
+            data = cls.get_default_config_data()
+            return cls(path=None, data=data)
 
-        with config_path.open("r") as f:
-            data = yaml.safe_load(f) or {}
+        else:
+            with config_path.open("r") as f:
+                data = yaml.safe_load(f) or {}
 
-        return cls(path=config_path, data=data)
+            return cls(path=config_path, data=data)
 
-    def get(self, *path: str, default: Any = None) -> Any:
+    def get(self, path: str, default: Any = None) -> Any:
         """
         Retrieves a nested value from the configuration data.
 
@@ -85,12 +77,17 @@ class Config:
             The requested value, or the default if not found.
         """
         value = self.data
+        path_list = path.split(".")
         try:
-            for key in path:
+            for key in path_list:
                 value = value[key]
             return value
         except (KeyError, TypeError):
             return default
+
+    @property
+    def db_url(self) -> str:
+        return self.get("db.url")
 
     @staticmethod
     def get_smo_dir() -> Path:
@@ -111,6 +108,9 @@ class Config:
     def get_default_config_data() -> dict:
         """Returns the default configuration as a dictionary."""
         return {
+            "db": {
+                "url": "sqlite:///" + str(Config.get_default_db_path()),
+            },
             "karmada_kubeconfig": str(
                 Path.home() / ".kube" / "karmada-apiserver.config"
             ),

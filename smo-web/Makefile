@@ -1,3 +1,5 @@
+# Generic tasks
+
 .PHONY: all test build format check lint clean
 
 all: check test
@@ -29,12 +31,5 @@ publish: build
 
 .PHONY: run
 
-run-fastapi-granian:
-	granian --interface asgi --factory smo_web.app:create_app --reload
-
-
-.PHONY: run
-## Run the Smo Web application (in development mode)
 run:
-	uvicorn smo_web.asgi:app --host 0.0.0.0 --port 8000 --reload
-	# granian --interface asgi --factory smo_web.app:create_app --reload
+	granian --interface asgi --factory smo_web.app:create_app --reload

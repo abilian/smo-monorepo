@@ -1,3 +1,5 @@
+"""A console utility for rich text output in CLI applications, with verbosity control and styled messages."""
+
 import rich.console
 
 

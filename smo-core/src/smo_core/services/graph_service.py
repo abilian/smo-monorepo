@@ -37,7 +37,7 @@ class GraphService:
     prom_helper: PrometheusHelper
     config: dict
 
-    def get_graphs(self, project: str=""):
+    def get_graphs(self, project: str = ""):
         """Retrieves all the descriptors of a project"""
         graphs = self.db_session.query(Graph).filter_by(project=project).all()
         return [graph.to_dict() for graph in graphs]

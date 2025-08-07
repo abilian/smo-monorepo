@@ -1,13 +1,10 @@
 from click.testing import CliRunner
-from tests.conftest import MockGraphService
 
 from smo_cli.cli import main
 from smo_cli.commands.exceptions import CliException
 
 
-def test_graph_deploy_from_file(
-    client: CliRunner, hdag_file: str, mock_graph_service: MockGraphService
-):
+def test_graph_deploy_from_file(client: CliRunner, hdag_file: str, mock_graph_service):
     result = client.invoke(
         main, ["-v", "graph", "deploy", "--project", "test-proj", hdag_file]
     )
@@ -50,13 +47,13 @@ def test_graph_describe_not_found(client: CliRunner):
     assert "Graph 'non-existent-graph' not found" in str(result.exception)
 
 
-def test_graph_start(client: CliRunner, mock_graph_service: MockGraphService):
+def test_graph_start(client: CliRunner, mock_graph_service):
     result = client.invoke(main, ["-v", "graph", "start", "my-graph"])
     assert result.exit_code == 0
     mock_graph_service.start_graph.assert_called_once_with("my-graph")
 
 
-def test_graph_stop(client: CliRunner, mock_graph_service: MockGraphService):
+def test_graph_stop(client: CliRunner, mock_graph_service):
     result = client.invoke(main, ["graph", "stop", "my-graph"], input="y\n")
     assert result.exit_code == 0
     mock_graph_service.stop_graph.assert_called_once_with("my-graph")

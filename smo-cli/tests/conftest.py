@@ -62,7 +62,7 @@ class MockGraphService:
             Graph(name="db-graph", project="db-proj", status="Running", services=[])
         ]
 
-    def get_graphs(self, project: str="") -> list[dict]:
+    def get_graphs(self, project: str = "") -> list[dict]:
         if project == "empty-project":
             return []
         return [
@@ -111,7 +111,6 @@ class MockScalerService:
 # --- MOCK DISHKA PROVIDER ---
 #
 class MockServiceProvider(Provider):
-    # ... (no changes, this is correct)
     scope = Scope.APP
 
     @provide(provides=ClusterService)

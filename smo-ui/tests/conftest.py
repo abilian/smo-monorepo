@@ -43,7 +43,7 @@ class MockGraphService:
     def __init__(self):
         self.deploy_graph = MagicMock()
 
-    def get_graphs(self, project: str="") -> list[Graph]:
+    def get_graphs(self, project: str = "") -> list[Graph]:
         return [
             Graph(name="graph-1", project="default", status="Running", services=[]),
             Graph(name="graph-2", project="default", status="Stopped", services=[]),
