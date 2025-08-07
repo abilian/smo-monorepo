@@ -20,9 +20,8 @@ def test_graph_deploy_from_file(
     mock_graph_service.deploy_graph.assert_called_once()
     # Check the args passed to the mocked function
     args, kwargs = mock_graph_service.deploy_graph.call_args
-    # args[0] is the context object, args[1] is the db session
-    assert args[2] == "test-proj"  # project
-    assert args[3]["id"] == "my-test-graph"  # graph_descriptor
+    assert args[1] == "test-proj"  # project
+    assert args[2]["id"] == "my-test-graph"  # graph_descriptor
 
 
 def test_graph_deploy_from_oci(runner, tmp_smo_dir: Path, mocker, mock_graph_service):

@@ -71,7 +71,7 @@ def runner():
 @pytest.fixture
 def mock_graph_service(mocker):
     """Mocks the entire graph_service module from smo_core."""
-    return mocker.patch("smo_cli.commands.graph.graph_service")
+    return mocker.patch("smo_core.services.graph_service.GraphService")
 
 
 @pytest.fixture
