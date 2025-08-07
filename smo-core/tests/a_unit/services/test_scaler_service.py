@@ -2,10 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from smo_core.services.scaler_service import (
-    ScalerService,
-    _run_threshold_scaler_iteration,
-)
+from smo_core.services.scaler_service import ScalerService
 
 
 @pytest.fixture
@@ -32,11 +29,10 @@ def test_run_threshold_scaler_iteration_scale_up(
     mock_prometheus_helper.get_request_rate_by_job.return_value = (
         25.0  # Above threshold
     )
+    scaler_service = ScalerService(mock_karmada_helper, mock_prometheus_helper)
 
     # Test
-    result = _run_threshold_scaler_iteration(
-        mock_karmada_helper,
-        mock_prometheus_helper,
+    result = scaler_service.run_threshold_scaler_iteration(
         "test-deployment",
         "default",
         20.0,  # scale_up_threshold
@@ -44,7 +40,6 @@ def test_run_threshold_scaler_iteration_scale_up(
         3,  # scale_up_replicas
         1,  # scale_down_replicas
     )
-
     assert result["action"] == "scale_up"
     assert result["new_replicas"] == 3
     mock_karmada_helper.scale_deployment.assert_called_once_with("test-deployment", 3)
@@ -55,11 +50,10 @@ def test_run_threshold_scaler_iteration_scale_down(
 ):
     # Setup
     mock_prometheus_helper.get_request_rate_by_job.return_value = 2.0  # Below threshold
+    scaler_service = ScalerService(mock_karmada_helper, mock_prometheus_helper)
 
     # Test
-    result = _run_threshold_scaler_iteration(
-        mock_karmada_helper,
-        mock_prometheus_helper,
+    result = scaler_service.run_threshold_scaler_iteration(
         "test-deployment",
         "default",
         20.0,  # scale_up_threshold
@@ -78,11 +72,10 @@ def test_run_threshold_scaler_iteration_no_action(
 ):
     # Setup - rate between thresholds
     mock_prometheus_helper.get_request_rate_by_job.return_value = 10.0
+    scaler_service = ScalerService(mock_karmada_helper, mock_prometheus_helper)
 
-    # Test
-    result = _run_threshold_scaler_iteration(
-        mock_karmada_helper,
-        mock_prometheus_helper,
+    # Test - should not scale up or down
+    result = scaler_service.run_threshold_scaler_iteration(
         "test-deployment",
         "default",
         20.0,  # scale_up_threshold

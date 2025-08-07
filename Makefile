@@ -8,9 +8,11 @@ help:
 .PHONY: test
 ## Run tests
 test:
-	uv run pytest smo-core
-	uv run pytest smo-cli
-	uv run pytest smo-web
+	cd smo-core && uv run pytest
+	cd smo-cli && uv run pytest
+	cd smo-ui && uv run pytest
+	cd smo-sdk && uv run pytest
+	cd smo-web && uv run pytest
 
 
 .PHONY: lint
@@ -27,7 +29,7 @@ clean:
 	cd smo-cli && adt clean
 	cd smo-web && adt clean
 	rm -rf examples/brussels-demo/*.tar.gz
-	rm -rf dist .nox */.nox 
+	rm -rf dist .nox */.nox
 
 
 .PHONY: format
