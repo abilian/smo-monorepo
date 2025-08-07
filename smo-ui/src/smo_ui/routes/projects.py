@@ -14,12 +14,17 @@ async def projects(
     graph_service: FromDishka[GraphService],
 ):
     project_stats = graph_service.get_project_stats()
-
+    # Add some additional stats that the template might use
+    total_projects = len(project_stats)
+    total_graphs = sum(p.get('graph_count', 0) for p in project_stats)
+    
     return templates.TemplateResponse(
         request,
         "projects.html",
         {
             "projects": project_stats,
+            "total_projects": total_projects,
+            "total_graphs": total_graphs,
             "active_page": "projects",
         },
     )
