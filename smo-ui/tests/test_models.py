@@ -1,9 +1,31 @@
 from datetime import datetime
 
-from sqlalchemy.orm import Session
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from smo_core.models import Cluster, Graph, Service
+from smo_core.models.base import Base
 from smo_ui.models.events import Event
+
+TEST_DATABASE_URL = "sqlite:///:memory:"
+
+
+@pytest.fixture(scope="function")
+def db_session():
+    """
+    Fixture to provide a test database session for model tests.
+    It creates all tables for each test and rolls back transactions.
+    """
+    engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base.metadata.create_all(bind=engine)
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=engine)
 
 
 def test_event_model(db_session: Session):

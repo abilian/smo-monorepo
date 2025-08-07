@@ -1,15 +1,15 @@
-from collections.abc import AsyncIterator
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
-from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
-from dishka.integrations.fastapi import setup_dishka
+from dishka import Provider, Scope, make_async_container, provide
 from fastapi.testclient import TestClient
 
 from smo_core.models import Graph
 from smo_core.services.cluster_service import ClusterService
 from smo_core.services.graph_service import GraphService
 from smo_ui.app import create_app
+from smo_ui.providers import ConfigProvider
 
 
 class MockClusterService:
@@ -45,8 +45,8 @@ class MockGraphService:
 
     def get_graphs(self, project: str = "") -> list[Graph]:
         return [
-            Graph(name="graph-1", project="default", status="Running", services=[]),
-            Graph(name="graph-2", project="default", status="Stopped", services=[]),
+            Graph(name="graph-1", project="default", status="Running"),
+            Graph(name="graph-2", project="default", status="Stopped"),
         ]
 
     def get_graph(self, name: str) -> Graph | None:
@@ -64,119 +64,42 @@ class MockGraphService:
         return {"id": "graph-from-oci", "hdaGraph": {"id": "graph-from-oci"}}
 
 
-class MockGraphProvider(Provider):
-    scope = Scope.REQUEST
-    service = provide(MockGraphService, provides=GraphService)
-
-
-class MockClusterProvider(Provider):
-    scope = Scope.REQUEST
-    service = provide(MockClusterService, provides=ClusterService)
+@pytest.fixture
+def mock_graph_service() -> MockGraphService:
+    """Fixture to provide an instance of the mock graph service."""
+    return MockGraphService()
 
 
 @pytest.fixture
-def mock_graph_service(dishka_container: AsyncContainer) -> MockGraphService:
-    return dishka_container.get_sync(GraphService)
+def mock_cluster_service() -> MockClusterService:
+    """Fixture to provide an instance of the mock cluster service."""
+    return MockClusterService()
 
 
 @pytest.fixture
-async def dishka_container() -> AsyncIterator[AsyncContainer]:
-    container = make_async_container(
-        MockGraphProvider(),
-        MockClusterProvider(),
-    )
-    yield container
-    await container.close()
+def client(
+    mock_graph_service: MockGraphService, mock_cluster_service: MockClusterService
+) -> Generator[TestClient]:
+    """
+    Main fixture for API tests. Creates a clean FastAPI app for each test,
+    with a DI container providing the specified mock services.
+    """
 
+    class TestProvider(Provider):
+        scope = Scope.APP
 
-@pytest.fixture
-def client(dishka_container: AsyncContainer) -> TestClient:
-    app = create_app()
-    setup_dishka(container=dishka_container, app=app)
-    return TestClient(app)
+        @provide
+        def get_graph_service(self) -> GraphService:
+            return mock_graph_service
 
+        @provide
+        def get_cluster_service(self) -> ClusterService:
+            return MockClusterService()
 
-#
-# Pre-dishka code for reference, not used in the current setup.
-#
+    container = make_async_container(TestProvider(), ConfigProvider())
 
-# import pytest
-# from fastapi.testclient import TestClient
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-#
-# from smo_core.models import Cluster, Graph, Service
-# from smo_core.models.base import Base
-# from smo_ui.app import app
-# from smo_ui.extensions import get_db
-#
-# assert Cluster and Graph and Service
-#
-# # Setup test database
-# TEST_DATABASE_URL = "sqlite:///:memory:"
-# engine = create_engine(
-#     TEST_DATABASE_URL,
-#     connect_args={"check_same_thread": False},
-#     echo=True,
-# )
-# TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-#
-# # Create tables once at module level
-# Base.metadata.create_all(bind=engine)
-#
-#
-# # Not used yet.
-# class MockKarmadaHelper:
-#     """Mock Karmada helper for testing"""
-#
-#     def get_cluster_info(self):
-#         return []
-#
-#     def get_replicas(self, name):
-#         return 1
-#
-#     def get_cpu_limit(self, name):
-#         return 1.0
-#
-#     def scale_deployment(self, name, replicas):
-#         pass
-#
-#
-# @pytest.fixture
-# def db_session():
-#     """Fixture to provide a test database session"""
-#     # Create all tables fresh for each test
-#     Base.metadata.create_all(bind=engine)
-#
-#     db = TestingSessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.rollback()
-#         db.close()
-#
-#
-# @pytest.fixture
-# def client(db_session):
-#     """Fixture to provide a test client with overridden dependencies"""
-#
-#     def override_get_db():
-#         try:
-#             yield db_session
-#         finally:
-#             db_session.close()
-#
-#     app.dependency_overrides[get_db] = override_get_db
-#     with TestClient(app) as test_client:
-#         yield test_client
-#     app.dependency_overrides.clear()
-#
-#
-# @pytest.fixture(autouse=True)
-# def clean_db(db_session):
-#     """Clean database after each test"""
-#     yield
-#     # Clear all data but keep tables
-#     for table in reversed(Base.metadata.sorted_tables):
-#         db_session.execute(table.delete())
-#     db_session.commit()
+    app = create_app(container=container)
+
+    # TestClient handles the app lifespan, including startup/shutdown of the container
+    with TestClient(app) as test_client:
+        yield test_client

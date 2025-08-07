@@ -55,7 +55,7 @@ async def deploy_post(
         graph_id = graph_descriptor["id"]
         # Redirect to the new graph's detail page
         return RedirectResponse(
-            url=request.url_for("graphs.graph_details", graph_id=graph_id),
+            url=request.url_for("graph_details", graph_id=graph_id),
             status_code=303,
         )
     except Exception as e:

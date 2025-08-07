@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from dishka import make_async_container
+from dishka import AsyncContainer, make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -23,11 +23,13 @@ def create_bare_app():
     return app
 
 
-def create_app():
+def create_app(container: AsyncContainer = None) -> FastAPI:
     """Create and configure the FastAPI application."""
     app = create_bare_app()
 
-    container = make_async_container(*main_providers)
+    if container is None:
+        container = make_async_container(*main_providers)
+
     setup_dishka(container=container, app=app)
     return app
 

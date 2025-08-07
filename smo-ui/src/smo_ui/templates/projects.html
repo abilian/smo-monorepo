@@ -43,7 +43,7 @@
   <div class="project-grid">
     {% for project in projects %}
       <a
-        href="{{ url_for('graphs.graphs', project_name=project.project) }}"
+        href="{{ url_for('graphs', project_name=project.project) }}"
         class="project-card"
       >
         <div class="card">

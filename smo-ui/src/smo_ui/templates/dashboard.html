@@ -3,7 +3,7 @@
 {% block content %}
   <header class="header">
     <h1>Graphs</h1>
-    <a href="{{ url_for('graphs.deploy') }}" class="btn btn-primary">Deploy New Graph</a>
+    <a href="{{ url_for('deploy') }}" class="btn btn-primary">Deploy New Graph</a>
   </header>
   <div class="graph-list">
     <div class="graph-item">
@@ -15,7 +15,7 @@
         <p>Project: default</p>
       </div>
       <div class="graph-actions">
-        <a href="{{ url_for('graphs.graph_details', graph_id='my-app-graph-1') }}" class="btn btn-secondary">Describe</a>
+        <a href="{{ url_for('graph_details', graph_id='my-app-graph-1') }}" class="btn btn-secondary">Describe</a>
         <button class="btn btn-secondary">Stop</button>
         <button class="btn btn-danger">Remove</button>
       </div>
@@ -29,7 +29,7 @@
         <p>Project: production</p>
       </div>
       <div class="graph-actions">
-        <a href="{{ url_for('graphs.graph_details', graph_id='video-transcoder') }}" class="btn btn-secondary">Describe</a>
+        <a href="{{ url_for('graph_details', graph_id='video-transcoder') }}" class="btn btn-secondary">Describe</a>
         <button class="btn btn-secondary">Stop</button>
         <button class="btn btn-danger">Remove</button>
       </div>
@@ -43,7 +43,7 @@
         <p>Project: test</p>
       </div>
       <div class="graph-actions">
-        <a href="{{ url_for('graphs.graph_details', graph_id='hello-world') }}" class="btn btn-secondary">Describe</a>
+        <a href="{{ url_for('graph_details', graph_id='hello-world') }}" class="btn btn-secondary">Describe</a>
         <button class="btn btn-secondary">Start</button>
         <button class="btn btn-danger">Remove</button>
       </div>
@@ -57,7 +57,7 @@
         <p>Project: staging</p>
       </div>
       <div class="graph-actions">
-        <a href="{{ url_for('graphs.graph_details', graph_id='data-pipeline') }}" class="btn btn-secondary">Describe</a>
+        <a href="{{ url_for('graph_details', graph_id='data-pipeline') }}" class="btn btn-secondary">Describe</a>
         <button class="btn btn-secondary" disabled>Stop</button>
         <button class="btn btn-danger">Remove</button>
       </div>

@@ -4,7 +4,7 @@
   <header class="header">
     <div>
       <a
-        href="{{ url_for('projects.projects') }}"
+        href="{{ url_for('projects') }}"
         style="
           color: #4a5568;
           text-decoration: none;
@@ -16,7 +16,7 @@
       >
       <h1>Graphs in "{{ project_name }}"</h1>
     </div>
-    <a href="{{ url_for('graphs.deploy') }}" class="btn btn-primary"
+    <a href="{{ url_for('deploy') }}" class="btn btn-primary"
       >Deploy a new Graph</a
     >
   </header>
@@ -38,7 +38,7 @@
         </div>
         <div class="graph-actions">
           <a
-            href="{{ url_for('graphs.graph_details', graph_id=graph.name) }}"
+            href="{{ url_for('graph_details', graph_id=graph.name) }}"
             class="btn btn-secondary"
             >Details</a
           >

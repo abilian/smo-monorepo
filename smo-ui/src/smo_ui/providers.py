@@ -1,11 +1,11 @@
+import os
 from collections.abc import Iterable
+from pathlib import Path
 
-from devtools import debug
 from dishka import Provider, Scope, provide
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from smo_core.context import SmoCoreContext
 from smo_core.helpers import GrafanaHelper, KarmadaHelper, PrometheusHelper
 from smo_core.models.base import Base
 from smo_core.services.cluster_service import ClusterService
@@ -13,6 +13,7 @@ from smo_core.services.graph_service import GraphService
 from smo_core.services.scaler_service import ScalerService
 from smo_ui.config import Config
 
+SMO_DIR = Path(os.getenv("SMO_DIR", "~/.smo")).expanduser()
 CONFIG = {
     "grafana": {
         "host": "http://localhost:3000",
@@ -23,30 +24,27 @@ CONFIG = {
     "karmada_kubeconfig": "/Users/fermigier/.kube/karmada-apiserver.config",
     "prometheus_host": "http://localhost:9090",
     "scaling": {"interval_seconds": 30},
-    "smo_dir": "/Users/fermigier/.smo",
+    "db": {
+        "url": f"sqlite:///{SMO_DIR}/smo.db",
+    },
+    "smo_dir": str(SMO_DIR),
 }
 
 
 class ConfigProvider(Provider):
     """Provides configuration from config.yaml"""
 
-    scope = Scope.APP
-
-    @provide
+    @provide(scope=Scope.REQUEST)
     def get_config(self) -> Config:
-        config_data = CONFIG
-        debug(config_data)
-        config_data["db_file"] = "data/smo.db"
-        return Config(config_data)
+        return Config(CONFIG)
 
 
 class DbProvider(Provider):
     """Manages the database connection lifecycle."""
 
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     def get_db_engine(self, config: Config) -> Engine:
-        db_file = config.data["db_file"]
-        engine = create_engine(f"sqlite:///{db_file}")
+        engine = create_engine(config.get("db.url"))
         Base.metadata.create_all(engine)
         return engine
 
@@ -132,38 +130,9 @@ class ServiceProvider(Provider):
         return ScalerService(karmada=karmada, prometheus=prometheus)
 
 
-class ContextProvider(Provider):
-    """Provides SmoCoreContext"""
-
-    scope = Scope.REQUEST
-
-    @provide
-    def get_context(
-        self,
-        config: Config,
-        karmada: KarmadaHelper,
-        prometheus: PrometheusHelper,
-        grafana: GrafanaHelper,
-    ) -> SmoCoreContext:
-        return SmoCoreContext(
-            config=config.data,
-            karmada=karmada,
-            prometheus=prometheus,
-            grafana=grafana,
-        )
-
-
-# main_providers = [
-#     ConfigProvider(),
-#     ConsoleProvider(),
-#     DbProvider(),
-#     InfraProvider(),
-#     ServiceProvider(),
-# ]
 main_providers = [
     DbProvider(),
     ConfigProvider(),
-    ContextProvider(),
     InfraProvider(),
     ServiceProvider(),
 ]
