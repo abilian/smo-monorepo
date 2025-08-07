@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Graph Details - {{ graph.name }}{% endblock %}
 {% block content %}
+  {% if request.state.error %}
+    <div class="card" style="background-color: #fee2e2; color: #dc2626; margin-bottom: 20px;">
+      <strong>Error:</strong> {{ request.state.error }}
+    </div>
+  {% endif %}
   <header class="header">
     <div class="header-title">
       <a

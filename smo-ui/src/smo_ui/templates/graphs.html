@@ -21,6 +21,11 @@
     >
   </header>
   <div class="graph-list">
+    {% if request.state.error %}
+      <div class="card" style="background-color: #fee2e2; color: #dc2626">
+        <strong>Error loading graphs:</strong> {{ request.state.error }}
+      </div>
+    {% endif %}
     {% for graph in graphs %}
       <div class="graph-item">
         <div class="graph-info">
