@@ -15,18 +15,20 @@ async def lifespan(app: FastAPI):
     await app.state.dishka_container.close()
 
 
+def create_bare_app():
+    """Create and configure a bare (no DI config) FastAPI application."""
+    app = FastAPI(title="SMO-UI", lifespan=lifespan)
+    app.mount("/static", StaticFiles(directory="src/smo_ui/static"), name="static")
+    register_routers(app)
+    return app
+
+
 def create_app():
     """Create and configure the FastAPI application."""
-    app = FastAPI(title="SMO-UI", lifespan=lifespan)
+    app = create_bare_app()
 
-    # Mount static files
-    app.mount("/static", StaticFiles(directory="src/smo_ui/static"), name="static")
-
-    # Register routers and setup DI
-    register_routers(app)
     container = make_async_container(*main_providers)
     setup_dishka(container=container, app=app)
-
     return app
 
 
