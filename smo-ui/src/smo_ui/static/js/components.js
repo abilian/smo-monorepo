@@ -14,6 +14,7 @@ class SmoSidebar extends HTMLElement {
         <div class="logo">SMO</div>
         <nav class="sidebar-menu">
           <a href="/" data-page="dashboard">Dashboard</a>
+          <a href="/graphs" data-page="graphs">All Graphs</a>
           <a href="/projects" data-page="projects">Projects</a>
           <a href="/clusters" data-page="clusters">Clusters</a>
           <a href="/marketplace" data-page="marketplace">Marketplace</a>
