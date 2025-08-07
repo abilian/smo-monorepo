@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 from click.testing import CliRunner
-from devtools import debug
 
 from smo_cli.cli import main
 
