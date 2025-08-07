@@ -36,6 +36,33 @@ test = [
 pythonpath = "."
 addopts = "-v -s"
 
+
+[tool.coverage.run]
+#branch = true
+source = ["src/smo_cli"]
+omit = ["src/smo_cli/__init__.py"]
+
+[tool.coverage.report]
+#show_missing = true
+ignore_errors = true
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+]
+
+
 [dependency-groups]
 dev = [
     "abilian-devtools>=0.7.7",

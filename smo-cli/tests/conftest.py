@@ -15,16 +15,16 @@ from smo_cli.providers import (
     DbProvider,
     InfraProvider,
 )
+from smo_core.models.graph import Graph
 from smo_core.services.cluster_service import ClusterService
 from smo_core.services.graph_service import GraphService
+from smo_core.services.scaler_service import ScalerService
 
 
 #
 # --- MOCK SERVICE IMPLEMENTATIONS ---
 #
 class MockClusterService:
-    """A mock implementation of the ClusterService for testing."""
-
     def fetch_clusters(self) -> list[dict]:
         return [
             {
@@ -50,20 +50,21 @@ class MockClusterService:
 
 
 class MockGraphService:
-    """A mock implementation of the GraphService for testing."""
-
     def __init__(self):
-        # Using MagicMock allows us to assert if these methods were called
         self.deploy_graph = MagicMock()
         self.remove_graph = MagicMock()
         self.trigger_placement = MagicMock()
         self.start_graph = MagicMock()
         self.stop_graph = MagicMock()
 
+        self.db_session = MagicMock()
+        self.db_session.query.return_value.all.return_value = [
+            Graph(name="db-graph", project="db-proj", status="Running", services=[])
+        ]
+
     def fetch_project_graphs(self, project: str) -> list[dict]:
         if project == "empty-project":
             return []
-        # Return a list of dicts that look like the .to_dict() output of the model
         return [
             {
                 "name": f"{project}-graph-1",
@@ -79,11 +80,12 @@ class MockGraphService:
             },
         ]
 
-    def fetch_graph(self, name: str) -> dict | None:
+    def fetch_graph(self, name: str) -> MagicMock | None:
         if name == "non-existent-graph":
             return None
-        # Return a dict that can be converted by .to_dict() in the command
-        return {
+
+        mock_graph_obj = MagicMock(spec=Graph)
+        mock_graph_obj.to_dict.return_value = {
             "name": name,
             "project": "default",
             "status": "Running",
@@ -92,17 +94,24 @@ class MockGraphService:
             "hdaGraph": {"id": name, "version": "1.0.0"},
             "placement": {},
         }
+        return mock_graph_obj
+
+
+class MockScalerService:
+    def run_threshold_scaler_iteration(self, **kwargs):
+        return {
+            "action": "scale_up",
+            "new_replicas": 3,
+            "reason": "Mocked scaling action.",
+            "current_replicas": 2,
+        }
 
 
 #
 # --- MOCK DISHKA PROVIDER ---
 #
 class MockServiceProvider(Provider):
-    """
-    This provider overrides the real ServiceProvider. Instead of creating
-    real services, it provides our mock implementations.
-    """
-
+    # ... (no changes, this is correct)
     scope = Scope.APP
 
     @provide(provides=ClusterService)
@@ -111,10 +120,13 @@ class MockServiceProvider(Provider):
 
     @provide(provides=GraphService)
     def get_mock_graph_service(self) -> MockGraphService:
-        # Return a singleton instance so we can inspect its MagicMocks
         if not hasattr(self, "_mock_graph_service"):
             self._mock_graph_service = MockGraphService()
         return self._mock_graph_service
+
+    @provide(provides=ScalerService)
+    def get_mock_scaler_service(self) -> MockScalerService:
+        return MockScalerService()
 
 
 #
@@ -122,15 +134,11 @@ class MockServiceProvider(Provider):
 #
 @pytest.fixture
 def runner() -> CliRunner:
-    """Provides a basic Click CliRunner."""
     return CliRunner()
 
 
 @pytest.fixture(scope="function")
 def tmp_smo_dir(tmp_path: Path, runner: CliRunner) -> Path:
-    """
-    Creates a temporary ~/.smo directory and runs `smo-cli init`.
-    """
     smo_dir = tmp_path / ".smo"
     os.environ["SMO_DIR"] = str(smo_dir)
     result = runner.invoke(main, ["init"])
@@ -140,9 +148,6 @@ def tmp_smo_dir(tmp_path: Path, runner: CliRunner) -> Path:
 
 @pytest.fixture
 def dishka_container(tmp_smo_dir: Path) -> Generator[Container, Any, None]:
-    """
-    Creates a SYNCHRONOUS dishka container configured for testing.
-    """
     container = make_container(
         ConfigProvider(),
         DbProvider(),
@@ -157,24 +162,22 @@ def dishka_container(tmp_smo_dir: Path) -> Generator[Container, Any, None]:
 
 @pytest.fixture
 def client(runner: CliRunner, dishka_container: Container, mocker) -> CliRunner:
-    """
-    Patches the CLI's entrypoint to use our pre-configured mock container.
-    """
     mocker.patch("smo_cli.cli.make_container", return_value=dishka_container)
     return runner
 
 
 @pytest.fixture
 def mock_graph_service(dishka_container: Container) -> MockGraphService:
-    """
-    Gets the singleton instance of our MockGraphService from the test container.
-    """
     return dishka_container.get(GraphService)
 
 
 @pytest.fixture
+def mock_cluster_service(dishka_container: Container) -> MockClusterService:
+    return dishka_container.get(ClusterService)
+
+
+@pytest.fixture
 def hdag_file(tmp_path: Path) -> str:
-    """Creates a temporary, structurally valid HDAG YAML file."""
     hdag_content = dedent("""
         hdaGraph:
           id: my-test-graph
