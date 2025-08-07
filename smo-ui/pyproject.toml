@@ -23,6 +23,9 @@ dev = [
     "ruff>=0.12.7",
 ]
 
+[project.scripts]
+smo-ui = "smo_ui.cli:cli"
+
 
 [build-system]
 requires = ["uv-build>=0.8.4,<0.9.0"]
