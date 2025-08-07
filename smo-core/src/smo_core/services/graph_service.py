@@ -386,45 +386,6 @@ class GraphService:
         }
 
 
-# @dataclass(frozen=True)
-# class GraphService:
-#     """Placeholder for GraphService class, which can be extended later."""
-#
-#     db_session: Session
-#     karmada_helper: KarmadaHelper
-#     grafana_helper: GrafanaHelper
-#     prom_helper: PrometheusHelper
-#     config: dict
-#
-#     def deploy_graph(self, project: str, graph_descriptor: dict) -> None:
-#         """Deploys a new graph based on the provided descriptor."""
-#         deploy_graph(self.db_session, project, graph_descriptor)
-#
-#     def start_graph(self, name: str) -> None:
-#         """Starts a graph by deploying its services."""
-#         start_graph(self.db_session, name)
-#
-#     def stop_graph(self, name: str) -> None:
-#         """Stops a graph by uninstalling its services."""
-#         stop_graph(self.db_session, name)
-#
-#     def remove_graph(self, name: str) -> None:
-#         """Removes a graph from the database and uninstalls its services."""
-#         remove_graph(self.db_session, name)
-#
-#     def trigger_placement(self, name: str) -> None:
-#         """Triggers a re-placement decision for a graph."""
-#         trigger_placement(self.db_session, name)
-#
-#     def fetch_project_graphs(self, project: str) -> list:
-#         """Fetches all graphs for a given project."""
-#         return fetch_project_graphs(self.db_session, project)
-#
-#     def fetch_graph(self, name: str) -> Graph:
-#         """Fetches a specific graph by its name."""
-#         return fetch_graph(self.db_session, name)
-
-
 def fetch_project_graphs(db_session: Session, project: str):
     """Retrieves all the descriptors of a project"""
     graphs = db_session.query(Graph).filter_by(project=project).all()
