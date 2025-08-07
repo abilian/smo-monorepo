@@ -8,28 +8,28 @@ class Console:
         self.verbosity = verbosity
         self.console = rich.console.Console()
 
-    def info(self, *args, **kwargs):
+    def info(self, msg, **kwargs):
         """Print a message only if verbosity is 1 or more."""
         if self.verbosity >= 1:
-            self.console.print(*args, **kwargs)
+            self.console.print(msg, **kwargs)
 
-    def debug(self, *args, **kwargs):
+    def debug(self, msg, **kwargs):
         """Print a message only if verbosity is 2 or more."""
         if self.verbosity >= 2:
-            self.console.print("[dim]DEBUG:[/] ", *args, **kwargs, style="grey70")
+            self.console.print("[dim]DEBUG:[/]", msg, **kwargs, style="grey70")
 
-    def error(self, *args, **kwargs):
+    def error(self, msg, **kwargs):
         """Print an error message."""
-        self.console.print("[bold red]ERROR:[/] ", *args, **kwargs)
+        self.console.print("[bold red]ERROR:[/]", msg, **kwargs)
 
-    def warning(self, *args, **kwargs):
+    def warning(self, msg, **kwargs):
         """Print a warning message."""
-        self.console.print("[bold yellow]WARNING:[/] ", *args, **kwargs)
+        self.console.print("[bold yellow]WARNING:[/]", msg, **kwargs)
 
-    def success(self, *args, **kwargs):
+    def success(self, msg, **kwargs):
         """Print a success message."""
-        self.console.print("[bold green]SUCCESS:[/] ", *args, **kwargs)
+        self.console.print("[bold green]SUCCESS:[/]", msg, **kwargs)
 
-    def print(self, *args, **kwargs):
+    def print(self, msg, **kwargs):
         """Prints a message without any formatting."""
-        self.console.print(*args, **kwargs)
+        self.console.print(msg, **kwargs)

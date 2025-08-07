@@ -7,17 +7,12 @@ from typing import Any
 
 import yaml
 
-# --- Constants ---
 DEFAULT_SMO_DIR = Path.home() / ".smo"
 CONFIG_FILENAME = "config.yaml"
 DB_FILENAME = "smo.db"
 
 
-#
-# --- Main Configuration Class ---
-#
-@dataclass
-class Config:
+class BaseConfig:
     """
     Manages SMO configuration by loading and providing access to settings
     from a YAML file.
@@ -28,10 +23,10 @@ class Config:
     """
 
     path: Path | None
-    data: dict = field(repr=False)  # Don't show the full data dict in repr
+    data: dict | None
 
     @classmethod
-    def load(cls, path: Path | str | None = None) -> Config:
+    def load(cls, path: Path | str | None = None) -> BaseConfig:
         """
         Loads the configuration from a given path or the default location.
 
@@ -43,9 +38,6 @@ class Config:
 
         Returns:
             An instance of the Config class.
-
-        Raises:
-            FileNotFoundError: If the configuration file cannot be found.
         """
         if path is None:
             path = cls.get_default_path()
@@ -53,14 +45,27 @@ class Config:
         config_path = Path(path)
 
         if not config_path.exists():
-            data = cls.get_default_config_data()
-            return cls(path=None, data=data)
+            return DefaultConfig()
 
-        else:
-            with config_path.open("r") as f:
-                data = yaml.safe_load(f) or {}
+        with config_path.open("r") as f:
+            data = yaml.safe_load(f) or {}
 
-            return cls(path=config_path, data=data)
+        return Config(path=config_path, data=data)
+
+    @staticmethod
+    def get_smo_dir() -> Path:
+        """Returns the SMO directory path, respecting the SMO_DIR env var."""
+        return Path(os.environ.get("SMO_DIR", DEFAULT_SMO_DIR)).expanduser()
+
+    @property
+    def smo_dir(self) -> Path:
+        """Returns the SMO directory path for this config instance."""
+        return self.get_smo_dir()
+
+    @staticmethod
+    def get_default_path() -> Path:
+        """Returns the default path to the configuration file."""
+        return Config.get_smo_dir() / CONFIG_FILENAME
 
     def get(self, path: str, default: Any = None) -> Any:
         """
@@ -85,31 +90,29 @@ class Config:
         except (KeyError, TypeError):
             return default
 
+
+@dataclass
+class Config(BaseConfig):
+    path: Path | None = None
+    data: dict = field(default_factory=dict, repr=False)
+
+
+class DefaultConfig(BaseConfig):
+    """
+    A default configuration instance that is loaded at module import time.
+    This allows other parts of the application to access the default config
+    without needing to call Config.load() explicitly.
+    """
+
+    path = None
+
     @property
-    def db_url(self) -> str:
-        return self.get("db.url")
-
-    @staticmethod
-    def get_smo_dir() -> Path:
-        """Returns the SMO directory path, respecting the SMO_DIR env var."""
-        return Path(os.environ.get("SMO_DIR", DEFAULT_SMO_DIR))
-
-    @staticmethod
-    def get_default_path() -> Path:
-        """Returns the default path to the configuration file."""
-        return Config.get_smo_dir() / CONFIG_FILENAME
-
-    @staticmethod
-    def get_default_db_path() -> Path:
-        """Returns the default path to the database file."""
-        return Config.get_smo_dir() / DB_FILENAME
-
-    @staticmethod
-    def get_default_config_data() -> dict:
+    def data(self) -> dict:
         """Returns the default configuration as a dictionary."""
+        db_path = self.get_smo_dir() / DB_FILENAME
         return {
             "db": {
-                "url": "sqlite:///" + str(Config.get_default_db_path()),
+                "url": "sqlite:///" + str(db_path),
             },
             "karmada_kubeconfig": str(
                 Path.home() / ".kube" / "karmada-apiserver.config"
@@ -128,8 +131,7 @@ class Config:
             },
         }
 
-    @staticmethod
-    def create_default_config(path: Path | str | None = None) -> None:
+    def write_default_config(self, path: Path | str | None = None) -> None:
         """
         Creates a default configuration file at the given or default path.
 
@@ -137,12 +139,10 @@ class Config:
             path: Optional path to create the file. If None, uses the default.
         """
         if path is None:
-            path = Config.get_default_path()
+            path = self.get_default_path()
 
         config_path = Path(path)
         config_path.parent.mkdir(parents=True, exist_ok=True)
 
-        default_data = Config.get_default_config_data()
-
         with config_path.open("w") as f:
-            yaml.dump(default_data, f, default_flow_style=False, sort_keys=False)
+            yaml.dump(self.data, f, default_flow_style=False, sort_keys=False)
