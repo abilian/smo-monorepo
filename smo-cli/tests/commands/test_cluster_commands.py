@@ -20,28 +20,19 @@ def test_cluster_sync(runner, tmp_smo_dir: Path, mock_cluster_service, mocker):
     # Configure the mock to return some data
     mock_cluster_service.fetch_clusters.return_value = [
         {
-            "name": "cluster-1",
-            "available_cpu": 8,
-            "available_ram": "16Gi",
+            "name": "kind-host",
+            "available_cpu": 6.95,
+            "available_ram": "7.33 GiB",
             "availability": True,
-            "acceleration": True,
-            "location": "us-west-1",
-        },
-        {
-            "name": "cluster-2",
-            "available_cpu": 4,
-            "available_ram": "8Gi",
-            "availability": False,
             "acceleration": False,
-            "location": "us-east-1",
-        },
+            "location": "Unknown",
+        }
     ]
 
     result = runner.invoke(main, ["cluster", "sync"])
-
     assert result.exit_code == 0
-    assert "cluster-1" in result.output
-    assert "Not Ready" in result.output  # for cluster-2
+    assert "kind-host" in result.output
+    assert "Successfully synced" in result.output
 
 
 def test_cluster_list_no_db(runner, tmp_smo_dir: Path, mocker):

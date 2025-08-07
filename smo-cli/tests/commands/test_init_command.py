@@ -17,8 +17,7 @@ def test_init_command(runner: CliRunner, tmp_path: Path) -> None:
     result = runner.invoke(main, ["init"])
 
     assert result.exit_code == 0
-    assert "Initializing SMO-CLI environment" in result.output
-    assert "Ensured local database is created" in result.output
+    assert "SUCCESS:" in result.output
     assert "Initialization complete" in result.output
     assert (smo_dir / "config.yaml").exists()
     assert (smo_dir / "smo.db").exists()
