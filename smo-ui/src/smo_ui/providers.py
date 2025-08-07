@@ -30,7 +30,7 @@ CONFIG = {
 class ConfigProvider(Provider):
     """Provides configuration from config.yaml"""
 
-    scope = Scope.REQUEST
+    scope = Scope.APP
 
     @provide
     def get_config(self) -> Config:
