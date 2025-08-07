@@ -48,6 +48,19 @@ class GraphService:
         Instantiates an application graph by using Helm to
         deploy each service's artifact.
         """
+        # 1. Validate and create Graph DB object
+        # 2. Prepare placement data (calculate_naive_placement, convert_placement)
+        # 3. Prepare service imports
+        # 4. Loop through services:
+        #    a. Create Prometheus alert
+        #    b. Translate resource intents (CPU, memory, etc.)
+        #    c. Update values_overwrite with placement info
+        #    d. Create service-level Grafana dashboard
+        #    e. Create Service DB object
+        #    f. Conditionally run helm install
+        # 5. Create graph-level Grafana dashboard
+        # 6. Commit transaction
+
         name = graph_descriptor["id"]
         if self.get_graph(name) is not None:
             raise ValueError(f"Graph with name {name} already exists")
