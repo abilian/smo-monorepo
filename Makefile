@@ -22,11 +22,12 @@ lint:
 .PHONY: clean
 ## Clean build artifacts and runtime files
 clean:
+	adt clean
 	cd smo-core && adt clean
 	cd smo-cli && adt clean
 	cd smo-web && adt clean
 	rm -rf examples/brussels-demo/*.tar.gz
-	rm -rf .nox */.nox
+	rm -rf dist .nox */.nox 
 
 
 .PHONY: format
