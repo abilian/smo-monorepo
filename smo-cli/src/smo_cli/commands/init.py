@@ -3,7 +3,6 @@ from pathlib import Path
 
 import click
 from dishka import FromDishka
-from snoop import snoop
 from sqlalchemy import Engine
 
 from smo_cli import config

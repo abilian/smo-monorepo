@@ -1,5 +1,4 @@
 from click.testing import CliRunner
-from tests.conftest import MockClusterService
 
 from smo_cli.cli import main
 from smo_core.models.cluster import Cluster
@@ -13,9 +12,7 @@ def test_cluster_sync(client: CliRunner):
     assert "cluster-1" in result.output
 
 
-def test_list_clusters_empty(
-    client: CliRunner, mock_cluster_service: MockClusterService
-):
+def test_list_clusters_empty(client: CliRunner, mock_cluster_service):
     """Tests the 'list' command when the service returns an empty list."""
     # Patch the INSTANCE from the DI container, not the class
     mock_cluster_service.list_clusters = lambda: []
@@ -25,9 +22,7 @@ def test_list_clusters_empty(
     assert "No clusters found" in result.output
 
 
-def test_make_table_with_model_objects(
-    client: CliRunner, mock_cluster_service: MockClusterService
-):
+def test_make_table_with_model_objects(client: CliRunner, mock_cluster_service):
     """Ensures the `.to_dict()` branch is covered in the table helper."""
     # Create real model objects to be returned by the mock service
     mock_clusters = [

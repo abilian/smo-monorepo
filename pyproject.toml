@@ -34,6 +34,7 @@ dev-dependencies = [
     "openapi-python-client>=0.25.2",
     "invoke>=2.2.0",
     "uv-build",
+    "respx>=0.22.0",
 ]
 
 [tool.uv.workspace]
