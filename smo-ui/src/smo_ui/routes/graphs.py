@@ -36,9 +36,9 @@ async def deploy(request: Request):
 @router.post("/deploy", response_class=RedirectResponse)
 async def deploy_post(
     request: Request,
+    graph_service: FromDishka[GraphService],
     descriptor_url: str = Form(..., alias="descriptor-url"),
     project_name: str = Form(..., alias="project-name"),
-    graph_service: FromDishka[GraphService],
 ):
     try:
         graph_descriptor = graph_service.get_graph_from_artifact(descriptor_url)
