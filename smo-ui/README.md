@@ -15,7 +15,7 @@ The SMO Web UI provides a modern, user-friendly interface for managing and monit
 
 The SMO-UI is built with:
 
-- **Frontend**: 
+- **Frontend**:
   - FastAPI for server-side rendering
   - Jinja2 templates with responsive design
   - Custom Web Components for reusable UI elements
@@ -27,22 +27,24 @@ The SMO-UI is built with:
   - SQLAlchemy for database access
   - Integration with `smo-core` services
 
+More details in [./docs/architecture.md](./docs/architecture.md)
+
 ## Development Setup
 
 ### Prerequisites
 
 - Python 3.12+
-- Node.js (for frontend assets)
+- Node.js (for frontend assets) - Currently not needed.
 - `smo-core` package installed
 
 ### Installation
 
 ```bash
 # Install dependencies
-uv pip install -e .
+uv sync
 
 # Run development server
-uvicorn smo_ui.app:app --reload
+make run
 ```
 
 The UI will be available at `http://localhost:8000`

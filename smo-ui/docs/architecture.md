@@ -17,6 +17,7 @@ The application is structured into several distinct layers, each with a clear re
 A typical request flows through these layers as follows:
 
 ```mermaid
+%%{init: { 'sequence': {'useMaxWidth': true} }}%%
 sequenceDiagram
     participant User/Browser
     participant FastAPI App
@@ -62,7 +63,7 @@ sequenceDiagram
 **c. Service Layer (Delegation to `smo-core`)**
 
 *   **Technology:** `smo-core` Python library.
-*   **Description:** This is the most critical architectural concept. **The `smo-ui` application contains no business logic.** It acts purely as a *client* to the `smo-core` library. All actions—fetching clusters, deploying graphs, calculating placement—are handled by calling the relevant service class (e.g., `GraphService`, `ClusterService`) from `smo-core`. This ensures that logic is centralized, reusable (by `smo-cli`, `smo-web`, etc.), and tested independently.
+*   **Description:** **The `smo-ui` application contains no business logic.** It acts purely as a *client* to the `smo-core` library. All actions—fetching clusters, deploying graphs, calculating placement—are handled by calling the relevant service class (e.g., `GraphService`, `ClusterService`) from `smo-core`. This ensures that logic is centralized, reusable (by `smo-cli`, `smo-web`, etc.), and tested independently.
 
 **d. Data Layer (SQLAlchemy & Alembic)**
 
