@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dishka import AsyncContainer, make_async_container
 from dishka.integrations.fastapi import setup_dishka
@@ -7,6 +8,8 @@ from fastapi.staticfiles import StaticFiles
 
 from .providers import main_providers
 from .routes import register_routers
+
+PACKAGE_DIR = Path(__file__).parent
 
 
 @asynccontextmanager
@@ -18,7 +21,7 @@ async def lifespan(app: FastAPI):
 def create_bare_app():
     """Create and configure a bare (no DI config) FastAPI application."""
     app = FastAPI(title="SMO-UI", lifespan=lifespan)
-    app.mount("/static", StaticFiles(directory="src/smo_ui/static"), name="static")
+    app.mount("/static", StaticFiles(directory=PACKAGE_DIR / "static"), name="static")
     register_routers(app)
     return app
 
