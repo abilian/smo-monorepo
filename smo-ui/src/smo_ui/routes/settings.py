@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from smo_core.context import SmoCoreContext
-from smo_ui.extensions import templates
+from smo_ui.templating import templates
 
 router = APIRouter(prefix="/settings", route_class=DishkaRoute)
 

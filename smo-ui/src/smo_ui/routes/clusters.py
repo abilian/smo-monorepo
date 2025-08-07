@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from smo_core.services.cluster_service import ClusterService
-from smo_ui.extensions import templates
+from smo_ui.templating import templates
 
 router = APIRouter(prefix="/clusters", route_class=DishkaRoute)
 

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from smo_core.services.graph_service import GraphService
-from smo_ui.extensions import templates
+from smo_ui.templating import templates
 
 router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
 

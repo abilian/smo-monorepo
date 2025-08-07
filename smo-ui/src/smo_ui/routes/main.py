@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 
 from smo_core.services.cluster_service import ClusterService
 from smo_core.services.graph_service import GraphService
-from smo_ui.extensions import templates
+from smo_ui.templating import templates
 
 router = APIRouter(route_class=DishkaRoute)
 
