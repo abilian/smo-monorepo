@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import yaml
 
 CONFIG_PATH = "config.yaml"
@@ -21,9 +23,6 @@ except FileNotFoundError:
     print(f"WARNING: Configuration file not found at {CONFIG_PATH}. Using defaults.")
     # A default config, assuming services are running locally or as per README
     config_data = DEFAULT_CONFIG_DATA
-
-
-from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

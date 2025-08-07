@@ -77,7 +77,7 @@ def test_fetch_project_graphs(mock_db_session):
     )
 
     # Test
-    result = service.fetch_project_graphs("test-project")
+    result = service.get_graphs("test-project")
     assert len(result) == 1
     assert result[0]["name"] == "test-graph"
 
@@ -97,7 +97,7 @@ def test_fetch_graph(mock_db_session):
     )
 
     # Test
-    result = service.fetch_graph("test-graph")
+    result = service.get_graph("test-graph")
     assert result.name == "test-graph"
 
 
@@ -265,7 +265,7 @@ def test_helm_install_artifact(mock_db_session, mock_karmada_helper):
     with (
         patch("tempfile.NamedTemporaryFile") as mock_tempfile,
         patch("smo_core.utils.external_commands.run_helm") as mock_run_helm,
-        patch("os.remove") as mock_remove,
+        patch("os.remove"),
     ):
         mock_tempfile.return_value.__enter__.return_value.name = "/tmp/values.yaml"
         mock_run_helm.return_value = ""  # Mock return value

@@ -37,12 +37,12 @@ class GraphService:
     prom_helper: PrometheusHelper
     config: dict
 
-    def fetch_project_graphs(self, project: str):
+    def get_graphs(self, project: str=""):
         """Retrieves all the descriptors of a project"""
         graphs = self.db_session.query(Graph).filter_by(project=project).all()
         return [graph.to_dict() for graph in graphs]
 
-    def fetch_graph(self, name: str):
+    def get_graph(self, name: str):
         """Retrieves the descriptor of an application graph."""
         return self.db_session.query(Graph).filter_by(name=name).first()
 
@@ -52,7 +52,7 @@ class GraphService:
         deploy each service's artifact.
         """
         name = graph_descriptor["id"]
-        if self.fetch_graph(name) is not None:
+        if self.get_graph(name) is not None:
             raise ValueError(f"Graph with name {name} already exists")
 
         graph = Graph(
@@ -184,7 +184,7 @@ class GraphService:
         self.db_session.commit()
 
     def trigger_placement(self, name: str):
-        graph = self.fetch_graph(name)
+        graph = self.get_graph(name)
         if not graph:
             raise ValueError(f"Graph with name {name} not found")
 
@@ -243,7 +243,7 @@ class GraphService:
         self.db_session.commit()
 
     def start_graph(self, name: str) -> None:
-        graph = self.fetch_graph(name)
+        graph = self.get_graph(name)
         if not graph:
             raise ValueError(f"Graph {name} not found")
         if graph.status == "Running":
@@ -265,7 +265,7 @@ class GraphService:
         self.db_session.commit()
 
     def stop_graph(self, name: str) -> None:
-        graph = self.fetch_graph(name)
+        graph = self.get_graph(name)
         if not graph:
             raise ValueError(f"Graph {name} not found")
         if graph.status == "Stopped":
@@ -279,7 +279,7 @@ class GraphService:
         self.db_session.commit()
 
     def remove_graph(self, name: str) -> None:
-        graph = self.fetch_graph(name)
+        graph = self.get_graph(name)
         if not graph:
             raise ValueError(f"Graph {name} not found")
 

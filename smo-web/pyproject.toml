@@ -9,7 +9,7 @@ dependencies = [
     "connexion[flask, swagger-ui]>=3.0",
     "python-dotenv>=1.0",
     "asyncpg >= 0.30.0",
-    "uvicorn>=0.35.0",
+    "granian",
 ]
 
 [dependency-groups]
@@ -22,8 +22,6 @@ dev = [
     "pytest",
     "pytest-mock",
     "requests",
-    "gunicorn>=21.0",
-    "uvicorn>=0.20",
     "uv-build",
 ]
 

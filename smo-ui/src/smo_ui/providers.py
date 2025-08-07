@@ -11,7 +11,7 @@ from smo_core.models.base import Base
 from smo_core.services.cluster_service import ClusterService
 from smo_core.services.graph_service import GraphService
 from smo_core.services.scaler_service import ScalerService
-from smo_ui.config import Config, config_data
+from smo_ui.config import Config
 
 CONFIG = {
     "grafana": {

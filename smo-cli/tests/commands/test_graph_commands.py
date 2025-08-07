@@ -45,7 +45,6 @@ def test_graph_describe(client: CliRunner):
 def test_graph_describe_not_found(client: CliRunner):
     """Tests 'graph describe' when the graph is not found."""
     result = client.invoke(main, ["-v", "graph", "describe", "non-existent-graph"])
-    # FIX: Assert on the exception object, not the output string
     assert result.exit_code != 0
     assert isinstance(result.exception, CliException)
     assert "Graph 'non-existent-graph' not found" in str(result.exception)

@@ -6,7 +6,7 @@ from dishka import AsyncContainer, Provider, Scope, make_async_container, provid
 from dishka.integrations.fastapi import setup_dishka
 from fastapi.testclient import TestClient
 
-from smo_core.models import Cluster, Graph
+from smo_core.models import Graph
 from smo_core.services.cluster_service import ClusterService
 from smo_core.services.graph_service import GraphService
 from smo_ui.app import create_app
@@ -43,13 +43,13 @@ class MockGraphService:
     def __init__(self):
         self.deploy_graph = MagicMock()
 
-    def fetch_project_graphs(self, project: str) -> list[Graph]:
+    def get_graphs(self, project: str="") -> list[Graph]:
         return [
             Graph(name="graph-1", project="default", status="Running", services=[]),
             Graph(name="graph-2", project="default", status="Stopped", services=[]),
         ]
 
-    def fetch_graph(self, name: str) -> Graph | None:
+    def get_graph(self, name: str) -> Graph | None:
         if name == "graph-1":
             return Graph(
                 name="graph-1",

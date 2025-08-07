@@ -28,7 +28,7 @@ def test_scaler_run(client: CliRunner, mocker):
         ],
     )
 
-    # FIX: A KeyboardInterrupt is an unhandled exception for the runner,
+    # A KeyboardInterrupt is an unhandled exception for the runner,
     # so it results in a non-zero exit code. This is expected.
     assert result.exit_code != 0
 

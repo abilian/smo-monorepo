@@ -23,7 +23,7 @@ async def graphs(
     project_name: str,
     graph_service: FromDishka[GraphService],
 ):
-    graphs_list = graph_service.fetch_project_graphs(project_name)
+    graphs_list = graph_service.get_graphs(project_name)
     return templates.TemplateResponse(
         request,
         "graphs.html",
@@ -79,7 +79,7 @@ async def graph_details(
     graph_id: str,
     graph_service: FromDishka[GraphService],
 ):
-    graph = graph_service.fetch_graph(graph_id)
+    graph = graph_service.get_graph(graph_id)
     return templates.TemplateResponse(
         request,
         "graph_details.html",

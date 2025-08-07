@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-import pytest
 
 from smo_core.utils.scaling import decide_replicas, scaling_loop
 
@@ -129,7 +128,7 @@ def test_scaling_loop(mocker):
     with patch("smo_core.utils.scaling.KarmadaHelper") as mock_karmada_helper:
         mock_karmada_helper.return_value = mock_karmada
 
-        with patch("requests.get") as mock_get:
+        with patch("requests.get"):
             scaling_loop(
                 "test-graph",
                 [False],

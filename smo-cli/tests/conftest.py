@@ -62,7 +62,7 @@ class MockGraphService:
             Graph(name="db-graph", project="db-proj", status="Running", services=[])
         ]
 
-    def fetch_project_graphs(self, project: str) -> list[dict]:
+    def get_graphs(self, project: str="") -> list[dict]:
         if project == "empty-project":
             return []
         return [
@@ -80,7 +80,7 @@ class MockGraphService:
             },
         ]
 
-    def fetch_graph(self, name: str) -> MagicMock | None:
+    def get_graph(self, name: str) -> MagicMock | None:
         if name == "non-existent-graph":
             return None
 

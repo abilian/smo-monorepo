@@ -30,7 +30,7 @@ publish: build
 .PHONY: run
 
 run-fastapi-granian:
-	granian --interface asgi --factory smo_ui.app:create_app --reload
+	granian --interface asgi --factory smo_web.app:create_app --reload
 
 
 .PHONY: run

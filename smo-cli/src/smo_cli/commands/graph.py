@@ -58,7 +58,7 @@ def list_graphs(
 ):
     """Lists all deployed graphs."""
     try:
-        graphs = graph_service.fetch_project_graphs(project) if project else []
+        graphs = graph_service.get_graphs(project) if project else []
         if not project:
             # This part of the logic needs to be on the service
             graphs = graph_service.db_session.query(Graph).all()
@@ -82,7 +82,7 @@ def describe(
     name: str, graph_service: FromDishka[GraphService], console: FromDishka[Console]
 ):
     """Shows detailed information for a specific graph."""
-    graph_obj = graph_service.fetch_graph(name)
+    graph_obj = graph_service.get_graph(name)
 
     if not graph_obj:
         msg = f"Graph '{name}' not found."
