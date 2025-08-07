@@ -90,11 +90,8 @@ class KarmadaHelper:
     def scale_deployment(self, name, replicas):
         """Scales the given application to the desired number of replicas"""
 
-        try:
-            self.v1_api_client.patch_namespaced_deployment_scale(
-                name=name,
-                namespace=self.namespace,
-                body={"spec": {"replicas": replicas}},
-            )
-        except Exception as exception:
-            print(str(exception))
+        self.v1_api_client.patch_namespaced_deployment_scale(
+            name=name,
+            namespace=self.namespace,
+            body={"spec": {"replicas": replicas}},
+        )
