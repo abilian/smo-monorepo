@@ -5,18 +5,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.orm.attributes import Mapped
-from sqlalchemy.types import JSON
 
-from smo_core.models.base import Base
-
-JsonType = JSON().with_variant(JSONB, "postgresql")
+from smo_core.models.base import Base, JsonType
 
 if TYPE_CHECKING:
     # Avoid circular import
     from .graph import Graph
+
+__all__ = ["Service"]
 
 
 class Service(Base):

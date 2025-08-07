@@ -1,15 +1,12 @@
 """Application graph model."""
 
 from sqlalchemy import String
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.orm.attributes import Mapped
-from sqlalchemy.types import JSON
 
-from smo_core.models.base import Base
+from smo_core.models.base import Base, JsonType
 
-# Use standard JSON for SQLite compatibility, with a variant for PostgreSQL's JSONB.
-JsonType = JSON().with_variant(JSONB, "postgresql")
+__all__ = ["Graph"]
 
 
 class Graph(Base):

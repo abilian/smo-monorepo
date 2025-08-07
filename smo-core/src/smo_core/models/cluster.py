@@ -4,6 +4,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 
+__all__ = ["Cluster"]
+
 
 class Cluster(Base):
     __tablename__ = "cluster"
