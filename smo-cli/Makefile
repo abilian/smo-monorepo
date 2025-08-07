@@ -9,7 +9,6 @@ lint:
 
 test:
 	pytest
-	nox -s tests
 
 format:
 	isort .
