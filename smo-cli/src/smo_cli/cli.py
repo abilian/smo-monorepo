@@ -2,6 +2,11 @@ import click
 from dishka import make_container
 from dishka.integrations.click import setup_dishka
 
+from .commands.cluster import cluster
+from .commands.config import config
+from .commands.graph import graph
+from .commands.init import init
+from .commands.scaler import scaler
 from .providers import main_providers
 
 
@@ -21,12 +26,6 @@ def main(ctx: click.Context, verbosity: int):
     container = make_container(*main_providers, context={int: verbosity})
     setup_dishka(container=container, context=ctx, auto_inject=True)
 
-
-from .commands.cluster import cluster
-from .commands.config import config
-from .commands.graph import graph
-from .commands.init import init
-from .commands.scaler import scaler
 
 main.add_command(init)
 main.add_command(cluster)
