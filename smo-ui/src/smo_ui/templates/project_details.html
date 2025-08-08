@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Project Details - {{ project_name }}{% endblock %}
+
+{% block content %}
+  <header class="header">
+    <div class="header-title">
+      <a
+        href="{{ url_for('projects') }}"
+        style="
+          color: #4a5568;
+          text-decoration: none;
+          font-weight: 500;
+          display: block;
+          margin-bottom: 10px;
+        "
+        >&larr; All Projects</a
+      >
+      <h1>Project: "{{ project_name }}"</h1>
+    </div>
+    <div>
+      <a href="{{ url_for('deploy') }}" class="btn btn-primary">Deploy New Graph</a>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    {# Main column for listing the graphs in this project #}
+    <div class="main-column">
+      <div class="card">
+        <h2>Graphs in this Project</h2>
+        <div class="graph-list">
+          {% if graphs %}
+            {% for graph in graphs %}
+              <div class="graph-item">
+                <div class="graph-info">
+                  <h3>
+                    {{ graph.name }}
+                    <span class="status-badge status-{{ graph.status|lower }}">{{ graph.status }}</span>
+                  </h3>
+                  {# Since we are on the project page, showing the project name again is redundant #}
+                </div>
+                <div class="graph-actions">
+                  <a href="{{ url_for('graph_details', graph_id=graph.name) }}" class="btn btn-secondary">Details</a>
+                  {% if graph.status.lower() == 'running' %}
+                    <button class="btn btn-secondary">Stop</button>
+                  {% elif graph.status.lower() == 'stopped' %}
+                    <button class="btn btn-secondary">Start</button>
+                  {% else %}
+                    <button class="btn btn-secondary" disabled>Stop</button>
+                  {% endif %}
+                  <button class="btn btn-danger">Remove</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No graphs found in this project.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Side column for project-level stats and actions #}
+    <div class="side-column">
+      <div class="card">
+        <h2>Information</h2>
+        <dl class="info-grid">
+          <dt>Total Graphs</dt>
+          <dd>{{ graph_count }}</dd>
+
+          <dt>Active Graphs</dt>
+          <dd>{{ active_graph_count }}</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>Actions</h2>
+        <button class="btn btn-danger-outline action-btn">
+          Delete Project
+        </button>
+      </div>
+    </div>
+  </div>
+{% endblock %}

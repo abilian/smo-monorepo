@@ -26,7 +26,7 @@ async def projects(
             project_stats[project]["active_graph_count"] += 1
 
     # Convert to list of dicts for template
-    projects_list = [{"project": p, **stats} for p, stats in project_stats.items()]
+    projects_list = [{"name": p, **stats} for p, stats in project_stats.items()]
     total_projects = len(projects_list)
     total_graphs = sum(p["graph_count"] for p in projects_list)
 
@@ -37,6 +37,31 @@ async def projects(
             "projects": projects_list,
             "total_projects": total_projects,
             "total_graphs": total_graphs,
+            "active_page": "projects",
+        },
+    )
+
+
+@router.get("/{project_name}", response_class=HTMLResponse)
+async def project_details(
+    request: Request,
+    graph_service: FromDishka[GraphService],
+):
+    project_name = request.path_params["project_name"]
+    graphs = graph_service.get_graphs()
+    graphs = [g for g in graphs if g.project == project_name]
+
+    graph_count = len(graphs)
+    active_graph_count = sum(1 for g in graphs if g.status.lower() == "running")
+
+    return templates.TemplateResponse(
+        request,
+        "project_details.html",
+        {
+            "project_name": project_name,
+            "graphs": graphs,
+            "graph_count": graph_count,
+            "active_graph_count": active_graph_count,
             "active_page": "projects",
         },
     )
