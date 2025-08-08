@@ -10,10 +10,8 @@ from rich.table import Table
 
 from smo_cli.console import Console
 from smo_core.models.graph import Graph
-from smo_core.services.graph_service import (
-    GraphService,
-    get_graph_from_artifact,
-)
+from smo_core.services.graph_service import GraphService
+from smo_core.utils import get_graph_from_artifact
 
 from .exceptions import CliException
 
