@@ -13,6 +13,13 @@ def test_index_route(client: TestClient):
     assert "Dashboard" in response.text
 
 
+def test_marketplace_route(client: TestClient):
+    """Test marketplace route returns successful response"""
+    response = client.get("/marketplace")
+    assert response.status_code == status.HTTP_200_OK
+    assert "Marketplace" in response.text
+
+
 @pytest.mark.skip
 def test_projects_route(client: TestClient):
     """Tests the projects overview page."""
@@ -57,13 +64,6 @@ def test_settings_route(client: TestClient):
     response = client.get("/settings")
     assert response.status_code == status.HTTP_200_OK
     assert "Settings" in response.text
-
-
-def test_marketplace_route(client: TestClient):
-    """Tests the placeholder marketplace page."""
-    response = client.get("/marketplace")
-    assert response.status_code == status.HTTP_200_OK
-    assert "Marketplace" in response.text
 
 
 def test_docs_route(client: TestClient):
