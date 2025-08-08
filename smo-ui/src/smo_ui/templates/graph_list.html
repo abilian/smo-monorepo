@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Graphs in {{ project_name }} - SMO{% endblock %}
+{% block title %}Graphs - SMO{% endblock %}
 {% block content %}
   <header class="header">
     <div>
@@ -14,7 +14,7 @@
         "
         >&larr; All projects</a
       >
-      <h1>Graphs in "{{ project_name }}"</h1>
+      <h1>Graphs</h1>
     </div>
     <a href="{{ url_for('deploy') }}" class="btn btn-primary"
       >Deploy a new Graph</a
@@ -43,13 +43,11 @@
             >Details</a
           >
           {% if graph.status == 'Running' %}
-            <button class="btn btn-secondary">Stop</button>
+            <a href="{{ url_for("graph_stop", graph_id=graph.name) }}" class="btn btn-secondary">Stop</a>
           {% elif graph.status == 'Stopped' %}
-            <button class="btn btn-secondary">Start</button>
-          {% else %}
-            <button class="btn btn-secondary" disabled>Stop</button>
+            <a href="{{ url_for("graph_start", graph_id=graph.name) }}" class="btn btn-secondary">Start</a>
           {% endif %}
-          <button class="btn btn-danger">Remove</button>
+          <a href="{{ url_for("graph_remove", graph_id=graph.name) }}" class="btn btn-danger">Remove</a>
         </div>
       </div>
     {% else %}

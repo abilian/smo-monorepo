@@ -2,6 +2,7 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_303_SEE_OTHER
 
 from smo_core.models import Graph
 from smo_core.services.graph_service import GraphService
@@ -26,24 +27,6 @@ async def graphs_index(request: Request, db_session: FromDishka[Session]):
     )
 
 
-# @router.get("/{project_name}", response_class=HTMLResponse)
-# async def graphs(
-#     request: Request,
-#     project_name: str,
-#     graph_service: FromDishka[GraphService],
-# ):
-#     graphs_list = graph_service.get_graphs(project_name)
-#     return templates.TemplateResponse(
-#         request,
-#         "graphs.html",
-#         {
-#             "project_name": project_name,
-#             "graphs": graphs_list,
-#             "active_page": "projects",
-#         },
-#     )
-
-
 @router.get("/deploy", response_class=HTMLResponse)
 async def deploy(request: Request):
     return templates.TemplateResponse(
@@ -58,7 +41,7 @@ async def deploy_post(
     descriptor_url: str = Form(..., alias="descriptor-url"),
     project_name: str = Form(..., alias="project-name"),
 ):
-    graph_descriptor = get_graph_from_artifact(descriptor_url)
+    graph_descriptor = get_graph_from_artifact(descriptor_url)["hdaGraph"]
     graph_service.deploy_graph(project_name, graph_descriptor)
     graph_id = graph_descriptor["id"]
     # Redirect to the new graph's detail page
@@ -103,3 +86,54 @@ async def graph_details(
             "active_page": "projects",
         },
     )
+
+
+# TODO: should be POST
+@router.get("/{graph_id}/stop", response_class=RedirectResponse)
+async def graph_stop(
+    request: Request,
+    graph_id: str,
+    graph_service: FromDishka[GraphService],
+):
+    graph = graph_service.get_graph(graph_id)
+    if not graph:
+        raise HTTPException(status_code=404, detail=f"Graph '{graph_id}' not found.")
+
+    graph_service.stop_graph(graph_id)
+    # redirect_url = request.url_for("graph_details", graph_id=graph_id)
+    redirect_url = request.url_for("graphs_index")
+    return RedirectResponse(redirect_url, status_code=HTTP_303_SEE_OTHER)
+
+
+# TODO: should be POST
+@router.get("/{graph_id}/start", response_class=RedirectResponse)
+async def graph_start(
+    request: Request,
+    graph_id: str,
+    graph_service: FromDishka[GraphService],
+):
+    graph = graph_service.get_graph(graph_id)
+    if not graph:
+        raise HTTPException(status_code=404, detail=f"Graph '{graph_id}' not found.")
+
+    graph_service.start_graph(graph_id)
+    # redirect_url = request.url_for("graph_details", graph_id=graph_id)
+    redirect_url = request.url_for("graphs_index")
+    return RedirectResponse(redirect_url, status_code=HTTP_303_SEE_OTHER)
+
+
+# TODO: should be POST
+@router.get("/{graph_id}/remove", response_class=RedirectResponse)
+async def graph_remove(
+    request: Request,
+    graph_id: str,
+    graph_service: FromDishka[GraphService],
+):
+    graph = graph_service.get_graph(graph_id)
+    if not graph:
+        raise HTTPException(status_code=404, detail=f"Graph '{graph_id}' not found.")
+
+    graph_service.remove_graph(graph_id)
+    # redirect_url = request.url_for("graph_details", graph_id=graph_id)
+    redirect_url = request.url_for("graphs_index")
+    return RedirectResponse(redirect_url, status_code=HTTP_303_SEE_OTHER)
