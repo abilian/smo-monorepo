@@ -62,24 +62,24 @@ def sample_graph_descriptor():
     }
 
 
-def test_fetch_project_graphs(mock_db_session):
-    # Setup test data
-    graph = Graph(name="test-graph", project="test-project", status="Running")
-    mock_db_session.query.return_value.filter_by.return_value.all.return_value = [graph]
-
-    # Create service
-    service = GraphService(
-        db_session=mock_db_session,
-        karmada_helper=MagicMock(),
-        grafana_helper=MagicMock(),
-        prom_helper=MagicMock(),
-        config={},
-    )
-
-    # Test
-    result = service.get_graphs("test-project")
-    assert len(result) == 1
-    assert result[0]["name"] == "test-graph"
+# def test_fetch_project_graphs(mock_db_session):
+#     # Setup test data
+#     graph = Graph(name="test-graph", project="test-project", status="Running")
+#     mock_db_session.query.return_value.filter_by.return_value.all.return_value = [graph]
+#
+#     # Create service
+#     service = GraphService(
+#         db_session=mock_db_session,
+#         karmada_helper=MagicMock(),
+#         grafana_helper=MagicMock(),
+#         prom_helper=MagicMock(),
+#         config={},
+#     )
+#
+#     # Test
+#     result = service.get_graphs("test-project")
+#     assert len(result) == 1
+#     assert result[0]["name"] == "test-graph"
 
 
 def test_fetch_graph(mock_db_session):

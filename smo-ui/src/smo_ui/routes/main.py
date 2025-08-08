@@ -1,9 +1,8 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy.orm import Session
 
-from smo_core.models import Graph
+from smo_core.services import GraphService
 from smo_core.services.cluster_service import ClusterService
 from smo_ui.templating import templates
 
@@ -14,16 +13,14 @@ router = APIRouter(route_class=DishkaRoute)
 async def index(
     request: Request,
     cluster_service: FromDishka[ClusterService],
-    db_session: FromDishka[Session],
+    graph_service: FromDishka[GraphService],
 ):
     clusters = cluster_service.list_clusters()
     ready_clusters = [c for c in clusters if c.availability]
     not_ready_clusters = [c for c in clusters if not c.availability]
 
-    # TODO: use the graph service to fetch graphs
-    graphs = db_session.query(Graph).all()
+    graphs = graph_service.get_graphs()
     active_graphs = [g for g in graphs if g.status == "Running"]
-
     projects = {g.project for g in graphs}
 
     stats = {

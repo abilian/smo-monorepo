@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 import yaml
 from glom import glom
+from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 
 from smo_core.helpers import KarmadaHelper, PrometheusHelper
@@ -34,10 +35,13 @@ class GraphService:
     prom_helper: PrometheusHelper
     config: dict
 
-    def get_graphs(self, project: str = "") -> list[dict]:
+    def get_graphs(self, project: str = "") -> list[Graph]:
         """Retrieves all the graph descriptors of a project"""
-        graphs = self.db_session.query(Graph).filter_by(project=project).all()
-        return [graph.to_dict() for graph in graphs]
+        stmt = select(Graph)
+        if project:
+            stmt = stmt.where(Graph.project == project)
+        stmt = stmt.order_by(Graph.name)
+        return list(self.db_session.scalars(stmt).all())
 
     def get_graph(self, name: str) -> Graph | None:
         """Retrieves the descriptor of an application graph."""

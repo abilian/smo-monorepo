@@ -40,14 +40,15 @@
       color: #4a5568;
     }
   </style>
+
   <div class="project-grid">
     {% for project in projects %}
       <a
-        href="{{ url_for('graphs', project_name=project.project) }}"
+        href="{{ url_for('projects', project_name=project.name) }}"
         class="project-card"
       >
         <div class="card">
-          <h3>{{ project.project }}</h3>
+          <h3>{{ project.name }}</h3>
           <div class="stats">
             <span><strong>{{ project.graph_count }}</strong> Graphs</span>
             <span><strong>{{ project.active_graph_count or 0 }}</strong> Active</span>
@@ -60,4 +61,5 @@
       </div>
     {% endfor %}
   </div>
+
 {% endblock %}

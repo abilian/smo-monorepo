@@ -16,7 +16,7 @@ async def projects(
     graph_service: FromDishka[GraphService],
 ):
     # Get all graphs and group by project
-    graphs = graph_service.get_graphs("")  # Empty string gets all projects
+    graphs = graph_service.get_graphs()
     project_stats = defaultdict(lambda: {"graph_count": 0, "active_graph_count": 0})
 
     for graph in graphs:
