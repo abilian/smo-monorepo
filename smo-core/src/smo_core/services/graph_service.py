@@ -396,11 +396,6 @@ class GraphService:
         }
 
 
-def fetch_graph(db_session: Session, name: str) -> Graph:
-    """Retrieves the descriptor of an application graph."""
-    return db_session.query(Graph).filter_by(name=name).first()
-
-
 def get_graph_from_artifact(artifact_ref: str) -> dict:
     """Fetches a graph descriptor from an artifact reference."""
     with tempfile.TemporaryDirectory() as dirpath:
