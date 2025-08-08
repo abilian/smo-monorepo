@@ -171,9 +171,7 @@ def calculate_naive_placement(
                 placed = True
                 break
         if not placed:
-            msg = PlacementError(
-                f"Service {service_id} with requirement {service_req} could not be placed in any cluster."
-            )
-            raise msg
+            msg = f"Service {service_id} with requirement {service_req} could not be placed in any cluster."
+            raise PlacementError(msg)
 
     return placement
