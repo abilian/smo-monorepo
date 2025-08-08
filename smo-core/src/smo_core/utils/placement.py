@@ -4,6 +4,10 @@ import cvxpy as cp
 import numpy as np
 
 
+class PlacementError(ValueError):
+    pass
+
+
 def swap_placement(service_dict):
     """
     Takes a dictionary that maps a service to its cluster
@@ -116,6 +120,8 @@ def calculate_naive_placement(
     cluster_capacities, cluster_accelerations, cpu_limits, accelerations, replicas
 ):
     """
+    Calculate a naive placement of services across clusters based on CPU capacity and GPU acceleration features.
+
     Parameters
     ---
     cluster_capacities: List of CPU capacity for each cluster
@@ -128,6 +134,10 @@ def calculate_naive_placement(
     ---
     2D List of placement. If the element at index [i][j] is 1
                it means that service i is placed at cluster j
+
+    Raises
+    ---
+    PlacementError: If a service cannot be placed in any cluster due to capacity or acceleration constraints.
     """
 
     num_clusters = len(cluster_capacities)
@@ -136,13 +146,13 @@ def calculate_naive_placement(
     service_reqs = [a * b for a, b in zip(replicas, cpu_limits)]
 
     if max(service_reqs) > min(cluster_capacities):
-        raise ValueError(
+        raise PlacementError(
             "A single service cannot fit into any cluster. "
             "Increase cluster capacity or reduce service requirements."
         )
 
     if sum(service_reqs) > sum(cluster_capacities):
-        raise ValueError(
+        raise PlacementError(
             "Insufficient total capacity to fit all services across the clusters."
         )
 
@@ -161,8 +171,9 @@ def calculate_naive_placement(
                 placed = True
                 break
         if not placed:
-            raise ValueError(
+            msg = PlacementError(
                 f"Service {service_id} with requirement {service_req} could not be placed in any cluster."
             )
+            raise msg
 
     return placement
