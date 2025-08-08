@@ -17,7 +17,7 @@ DEFAULT_CONFIG_DATA = {
 }
 
 try:
-    with open(CONFIG_PATH, "r") as f:
+    with open(CONFIG_PATH) as f:
         config_data = yaml.safe_load(f)
 except FileNotFoundError:
     print(f"WARNING: Configuration file not found at {CONFIG_PATH}. Using defaults.")

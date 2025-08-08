@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -23,9 +23,9 @@ class Event(Base):
     # Source of the event, e.g., "deployment", "alert", etc.
     source: Mapped[Optional[str]] = mapped_column(String(50))
     # Additional metadata in JSON format
-    meta: Mapped[Dict[str, Any]] = mapped_column(JsonType, default={})
+    meta: Mapped[dict[str, Any]] = mapped_column(JsonType, default={})
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert model to dictionary for easy serialization."""
         return {
             "id": self.id,

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.orm.attributes import Mapped
 
@@ -22,20 +22,20 @@ class Service(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), unique=True)
-    status: Mapped[Optional[str]] = mapped_column(String(255))
-    grafana: Mapped[Optional[str]] = mapped_column(String(255))
-    cluster_affinity: Mapped[Optional[str]] = mapped_column(String(255))
-    artifact_ref: Mapped[Optional[str]] = mapped_column(String(255))
-    artifact_type: Mapped[Optional[str]] = mapped_column(String(255))
-    artifact_implementer: Mapped[Optional[str]] = mapped_column(String(255))
-    cpu: Mapped[Optional[str]] = mapped_column(String(255))
-    memory: Mapped[Optional[str]] = mapped_column(String(255))
-    storage: Mapped[Optional[str]] = mapped_column(String(255))
-    gpu: Mapped[Optional[str]] = mapped_column(String(255))
+    status: Mapped[str | None] = mapped_column(String(255))
+    grafana: Mapped[str | None] = mapped_column(String(255))
+    cluster_affinity: Mapped[str | None] = mapped_column(String(255))
+    artifact_ref: Mapped[str | None] = mapped_column(String(255))
+    artifact_type: Mapped[str | None] = mapped_column(String(255))
+    artifact_implementer: Mapped[str | None] = mapped_column(String(255))
+    cpu: Mapped[str | None] = mapped_column(String(255))
+    memory: Mapped[str | None] = mapped_column(String(255))
+    storage: Mapped[str | None] = mapped_column(String(255))
+    gpu: Mapped[str | None] = mapped_column(String(255))
 
     # For JSON columns, you can type hint with Dict, List, or Any
-    values_overwrite: Mapped[Optional[JsonType]] = mapped_column(JsonType)
-    alert: Mapped[Optional[JsonType]] = mapped_column(JsonType)
+    values_overwrite: Mapped[JSON | None] = mapped_column(JsonType)
+    alert: Mapped[JSON | None] = mapped_column(JsonType)
 
     # Foreign Key and Relationship
     graph_id: Mapped[int] = mapped_column(ForeignKey("graph.id"))

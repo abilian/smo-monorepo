@@ -1,5 +1,5 @@
 import sys
-from typing import Iterable
+from collections.abc import Iterable
 
 import click
 import yaml
@@ -175,7 +175,7 @@ def get_graph_data(descriptor: str) -> dict:
         return get_graph_from_artifact(descriptor)
 
     if descriptor.endswith(".yaml") or descriptor.endswith(".yml"):
-        with open(descriptor, "r") as f:
+        with open(descriptor) as f:
             graph_data = yaml.safe_load(f)
             return graph_data
 
