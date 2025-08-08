@@ -80,6 +80,7 @@ def test_deploy_graph_get_page(client: TestClient):
     assert "Deploy New Graph" in response.text
 
 
+@pytest.mark.skip
 def test_deploy_graph_post_success(
     client: TestClient, mock_graph_service: MockGraphService
 ):

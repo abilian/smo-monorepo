@@ -3,6 +3,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from smo_core.services.graph_service import GraphService
+from smo_core.utils import get_graph_from_artifact
 from smo_ui.templating import templates
 
 router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
@@ -49,28 +50,30 @@ async def deploy_post(
     descriptor_url: str = Form(..., alias="descriptor-url"),
     project_name: str = Form(..., alias="project-name"),
 ):
-    try:
-        graph_descriptor = graph_service.get_graph_from_artifact(descriptor_url)
-        graph_service.deploy_graph(project_name, graph_descriptor)
-        graph_id = graph_descriptor["id"]
-        # Redirect to the new graph's detail page
-        return RedirectResponse(
-            url=request.url_for("graph_details", graph_id=graph_id),
-            status_code=303,
-        )
-    except Exception as e:
-        # Basic error handling: re-render form with an error message
-        return templates.TemplateResponse(
-            request,
-            "deploy.html",
-            {
-                "error": f"Failed to deploy graph: {e}",
-                "descriptor_url": descriptor_url,
-                "project_name": project_name,
-                "active_page": "projects",
-            },
-            status_code=400,
-        )
+    graph_descriptor = get_graph_from_artifact(descriptor_url)
+    graph_service.deploy_graph(project_name, graph_descriptor)
+    graph_id = graph_descriptor["id"]
+    # Redirect to the new graph's detail page
+    return RedirectResponse(
+        url=request.url_for("graph_details", graph_id=graph_id),
+        status_code=303,
+    )
+
+    # TODO:
+    # ...
+    # except Exception as e:
+    #     # Basic error handling: re-render form with an error message
+    #     return templates.TemplateResponse(
+    #         request,
+    #         "deploy.html",
+    #         {
+    #             "error": f"Failed to deploy graph: {e}",
+    #             "descriptor_url": descriptor_url,
+    #             "project_name": project_name,
+    #             "active_page": "projects",
+    #         },
+    #         status_code=400,
+    #     )
 
 
 @router.get("/{graph_id}", response_class=HTMLResponse)

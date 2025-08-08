@@ -2,8 +2,6 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from .conftest import MockGraphService
-
 
 def test_index_route(client: TestClient):
     response = client.get("/")
@@ -41,20 +39,3 @@ def test_settings_route(client: TestClient):
     response = client.get("/settings")
     assert response.status_code == status.HTTP_200_OK
     assert "Settings" in response.text
-
-
-def test_deploy_graph_post_success(
-    client: TestClient, mock_graph_service: MockGraphService
-):
-    form_data = {
-        "descriptor-url": "oci://my-registry/my-graph:1.0",
-        "project-name": "new-project",
-    }
-    response = client.post("/graphs/deploy", data=form_data, follow_redirects=False)
-
-    assert response.status_code == status.HTTP_303_SEE_OTHER
-    assert response.headers["location"] == "http://testserver/graphs/graph-from-oci"
-
-    mock_graph_service.deploy_graph.assert_called_once_with(
-        "new-project", {"id": "graph-from-oci", "hdaGraph": {"id": "graph-from-oci"}}
-    )

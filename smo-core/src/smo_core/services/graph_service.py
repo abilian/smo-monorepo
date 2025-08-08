@@ -3,7 +3,6 @@
 import os
 import tempfile
 from dataclasses import dataclass
-from pathlib import Path
 
 import yaml
 from sqlalchemy.orm.session import Session
@@ -11,7 +10,7 @@ from sqlalchemy.orm.session import Session
 from smo_core.helpers import KarmadaHelper, PrometheusHelper
 from smo_core.helpers.grafana.grafana_helper import GrafanaHelper
 from smo_core.models import Cluster, Graph, Service
-from smo_core.utils import run_hdarctl, run_helm
+from smo_core.utils import run_helm
 from smo_core.utils.intent_translation import (
     translate_cpu,
     translate_memory,
@@ -394,21 +393,3 @@ class GraphService:
             "for": f"{grace_period}",
             "labels": {"severity": "critical", "service": name},
         }
-
-
-def get_graph_from_artifact(artifact_ref: str) -> dict:
-    """Fetches a graph descriptor from an artifact reference."""
-    with tempfile.TemporaryDirectory() as dirpath:
-        print(f"Pulling artifact {artifact_ref}...")
-        result = run_hdarctl("pull", artifact_ref, "--untar", "--destination", dirpath)
-        print(result)
-
-        for yaml_file_path in Path(dirpath).rglob("*.yml"):
-            with open(yaml_file_path, "r") as yaml_file:
-                return yaml.safe_load(yaml_file)
-
-        for yaml_file_path in Path(dirpath).rglob("*.yaml"):
-            with open(yaml_file_path, "r") as yaml_file:
-                return yaml.safe_load(yaml_file)
-
-    raise FileNotFoundError("No YAML descriptor found in artifact.")
