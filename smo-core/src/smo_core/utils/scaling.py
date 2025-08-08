@@ -27,60 +27,91 @@ def scaling_loop(
     karmada_helper = KarmadaHelper(config_file_path)
     prometheus_helper = PrometheusHelper(prometheus_host, decision_interval)
     while True:
-        previous_replicas = [
+        current_replicas = [
             karmada_helper.get_replicas(service) for service in managed_services
         ]
-        if None in previous_replicas:
+        if None in current_replicas:
             time.sleep(5)
         else:
             break
 
-    previous_replicas = [
+    current_replicas = [
         karmada_helper.get_replicas(service) for service in managed_services
     ]
     cpu_limits = [karmada_helper.get_cpu_limit(service) for service in managed_services]
 
     while not stop_event.is_set():
-        request_rates = []
-        for service in managed_services:
-            if service == "image-compression-vo":
-                request_rates.append(
-                    prometheus_helper.get_request_rate("noise-reduction")
-                )
-            else:
-                request_rates.append(prometheus_helper.get_request_rate(service))
-        print(
-            request_rates,
-            previous_replicas,
-            cpu_limits,
+        new_replicas = loop_step(
             acceleration,
             alpha,
             beta,
-            cluster_capacity,
             cluster_acceleration,
-            maximum_replicas,
-        )
-
-        new_replicas = decide_replicas(
-            request_rates,
-            previous_replicas,
+            cluster_capacity,
             cpu_limits,
-            acceleration,
-            alpha,
-            beta,
-            cluster_capacity,
-            cluster_acceleration,
+            decision_interval,
+            graph_name,
+            karmada_helper,
+            managed_services,
             maximum_replicas,
+            current_replicas,
+            prometheus_helper,
         )
-        if new_replicas is None:
-            requests.get(f"http://localhost:8000/graphs/{graph_name}/placement")
-        else:
-            for idx, replicas in enumerate(new_replicas):
-                karmada_helper.scale_deployment(managed_services[idx], replicas)
         print(new_replicas)
-
-        previous_replicas = new_replicas
+        current_replicas = new_replicas
         time.sleep(decision_interval)
+
+
+def loop_step(
+    acceleration,
+    alpha,
+    beta,
+    cluster_acceleration,
+    cluster_capacity,
+    cpu_limits,
+    decision_interval,
+    graph_name,
+    karmada_helper,
+    managed_services,
+    maximum_replicas,
+    previous_replicas,
+    prometheus_helper,
+):
+    request_rates = []
+    for service in managed_services:
+        if service == "image-compression-vo":
+            request_rates.append(prometheus_helper.get_request_rate("noise-reduction"))
+        else:
+            request_rates.append(prometheus_helper.get_request_rate(service))
+
+    print(
+        request_rates,
+        previous_replicas,
+        cpu_limits,
+        acceleration,
+        alpha,
+        beta,
+        cluster_capacity,
+        cluster_acceleration,
+        maximum_replicas,
+    )
+    new_replicas = decide_replicas(
+        request_rates,
+        previous_replicas,
+        cpu_limits,
+        acceleration,
+        alpha,
+        beta,
+        cluster_capacity,
+        cluster_acceleration,
+        maximum_replicas,
+    )
+    if new_replicas is None:
+        requests.get(f"http://localhost:8000/graphs/{graph_name}/placement")
+    else:
+        for idx, replicas in enumerate(new_replicas):
+            karmada_helper.scale_deployment(managed_services[idx], replicas)
+
+    return new_replicas
 
 
 def decide_replicas(
