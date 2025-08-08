@@ -197,10 +197,7 @@ class GraphService:
         if not graph:
             raise ValueError(f"Graph with name {name} not found")
 
-        services = [s.name for s in graph.services]
-        cpu_limits = [s.cpu for s in graph.services]
-        acceleration_list = [s.gpu for s in graph.services]
-
+        # 1. Gather current state data
         cluster_data = self._get_cluster_data()
         current_replicas = {
             s.name: self.karmada_helper.get_replicas(s.name) or 1
@@ -211,47 +208,10 @@ class GraphService:
         new_placement_matrix = self._calculate_new_placement(
             graph, cluster_data, current_replicas
         )
-        # graph.placement = new_placement_matrix
+        graph.placement = new_placement_matrix
 
-        current_replicas = [self.karmada_helper.get_replicas(s) or 1 for s in services]
-        placement = decide_placement(
-            cluster_data["capacities"],
-            cluster_data["accelerations"],
-            cpu_limits,
-            acceleration_list,
-            current_replicas,
-            graph.placement or [],
-        )
-        graph.placement = placement
-
-        descriptor_services = graph.graph_descriptor["services"]
-        service_placement = convert_placement(
-            placement, descriptor_services, cluster_data["names"]
-        )
-        import_clusters = self._create_service_imports(
-            descriptor_services, service_placement
-        )
-
-        for service in graph.services:
-            values_overwrite = dict(service.values_overwrite)
-            placement_dict = values_overwrite
-            if service.artifact_implementer == "WOT":
-                placement_dict = values_overwrite.setdefault("voChartOverwrite", {})
-
-            if (
-                placement_dict.get("clustersAffinity", [None])[0]
-                != service_placement[service.name]
-            ):
-                placement_dict["clustersAffinity"] = [service_placement[service.name]]
-                placement_dict["serviceImportClusters"] = import_clusters[service.name]
-                service.values_overwrite = values_overwrite
-                self._helm_install_artifact(
-                    service.name,
-                    service.artifact_ref,
-                    values_overwrite,
-                    graph.project,
-                    "upgrade",
-                )
+        # 3. Apply the changes to the services
+        self._apply_placement_changes(graph, new_placement_matrix, cluster_data)
 
         self.db_session.commit()
 
@@ -280,6 +240,37 @@ class GraphService:
             [current_replicas[name] for name in service_names],
             graph.placement or [],
         )
+
+    def _apply_placement_changes(
+        self, graph: Graph, new_placement_matrix, cluster_data
+    ):
+        descriptor_services = graph.graph_descriptor["services"]
+        service_placement = convert_placement(
+            new_placement_matrix, descriptor_services, cluster_data["names"]
+        )
+        import_clusters = self._create_service_imports(
+            descriptor_services, service_placement
+        )
+        for service in graph.services:
+            values_overwrite = dict(service.values_overwrite)
+            placement_dict = values_overwrite
+            if service.artifact_implementer == "WOT":
+                placement_dict = values_overwrite.setdefault("voChartOverwrite", {})
+
+            if (
+                placement_dict.get("clustersAffinity", [None])[0]
+                != service_placement[service.name]
+            ):
+                placement_dict["clustersAffinity"] = [service_placement[service.name]]
+                placement_dict["serviceImportClusters"] = import_clusters[service.name]
+                service.values_overwrite = values_overwrite
+                self._helm_install_artifact(
+                    service.name,
+                    service.artifact_ref,
+                    values_overwrite,
+                    graph.project,
+                    "upgrade",
+                )
 
     def start_graph(self, name: str) -> None:
         graph = self.get_graph(name)
