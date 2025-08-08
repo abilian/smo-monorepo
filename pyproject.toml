@@ -35,6 +35,9 @@ dev-dependencies = [
     "invoke>=2.2.0",
     "uv-build",
     "respx>=0.22.0",
+    "mccabe>=0.7.0",
+    "flake8-adjustable-complexity>=0.0.6",
+    "complexipy>=3.3.0",
 ]
 
 [tool.uv.workspace]

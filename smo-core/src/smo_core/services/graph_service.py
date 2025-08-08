@@ -33,12 +33,12 @@ class GraphService:
     prom_helper: PrometheusHelper
     config: dict
 
-    def get_graphs(self, project: str = ""):
+    def get_graphs(self, project: str = "") -> list[dict]:
         """Retrieves all the descriptors of a project"""
         graphs = self.db_session.query(Graph).filter_by(project=project).all()
         return [graph.to_dict() for graph in graphs]
 
-    def get_graph(self, name: str):
+    def get_graph(self, name: str) -> Graph | None:
         """Retrieves the descriptor of an application graph."""
         return self.db_session.query(Graph).filter_by(name=name).first()
 
@@ -201,18 +201,22 @@ class GraphService:
         cpu_limits = [s.cpu for s in graph.services]
         acceleration_list = [s.gpu for s in graph.services]
 
-        current_replicas = [self.karmada_helper.get_replicas(s) or 1 for s in services]
+        cluster_data = self._get_cluster_data()
+        current_replicas = {
+            s.name: self.karmada_helper.get_replicas(s.name) or 1
+            for s in graph.services
+        }
 
-        available_clusters = (
-            self.db_session.query(Cluster).filter_by(availability=True).all()
+        # 2. Calculate the new placement matrix
+        new_placement_matrix = self._calculate_new_placement(
+            graph, cluster_data, current_replicas
         )
-        cluster_list = [c.name for c in available_clusters]
-        cluster_capacity_list = [c.available_cpu for c in available_clusters]
-        cluster_acceleration_list = [c.acceleration for c in available_clusters]
+        # graph.placement = new_placement_matrix
 
+        current_replicas = [self.karmada_helper.get_replicas(s) or 1 for s in services]
         placement = decide_placement(
-            cluster_capacity_list,
-            cluster_acceleration_list,
+            cluster_data["capacities"],
+            cluster_data["accelerations"],
             cpu_limits,
             acceleration_list,
             current_replicas,
@@ -222,7 +226,7 @@ class GraphService:
 
         descriptor_services = graph.graph_descriptor["services"]
         service_placement = convert_placement(
-            placement, descriptor_services, cluster_list
+            placement, descriptor_services, cluster_data["names"]
         )
         import_clusters = self._create_service_imports(
             descriptor_services, service_placement
@@ -250,6 +254,32 @@ class GraphService:
                 )
 
         self.db_session.commit()
+
+    def _get_cluster_data(self) -> dict:
+        """Queries the database for current cluster capacity and returns structured data."""
+        available_clusters = (
+            self.db_session.query(Cluster).filter_by(availability=True).all()
+        )
+        return {
+            "names": [c.name for c in available_clusters],
+            "capacities": [c.available_cpu for c in available_clusters],
+            "accelerations": [c.acceleration for c in available_clusters],
+        }
+
+    def _calculate_new_placement(
+        self, graph: Graph, cluster_data: dict, current_replicas: dict
+    ) -> list:
+        """Calculates a new placement solution for the graph."""
+        services = graph.services
+        service_names = [s.name for s in services]
+        return decide_placement(
+            cluster_data["capacities"],
+            cluster_data["accelerations"],
+            [s.cpu for s in services],
+            [s.gpu for s in services],
+            [current_replicas[name] for name in service_names],
+            graph.placement or [],
+        )
 
     def start_graph(self, name: str) -> None:
         graph = self.get_graph(name)
