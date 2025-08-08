@@ -353,18 +353,17 @@ class GraphService:
             yaml.dump(values_overwrite, values_file)
             values_filename = values_file.name
 
+        # fmt: off
         args = [
             command,
             name,
             artifact_ref,
-            "--values",
-            values_filename,
-            "--namespace",
-            namespace,
+            "--values", values_filename,
+            "--namespace", namespace,
             "--create-namespace",
-            "--kubeconfig",
-            self.config["karmada_kubeconfig"],
+            "--kubeconfig", self.config["karmada_kubeconfig"],
         ]
+        # fmt: on
         if self.config.get("helm", {}).get("insecure_registry"):
             args.append("--plain-http")
         if command == "upgrade":
@@ -381,14 +380,14 @@ class GraphService:
                 self.prom_helper.update_alert_rules(service.alert, "remove")
             if service.status == "Deployed":
                 print(f"Uninstalling service {service.name}...")
+                # fmt: off
                 args = [
                     "uninstall",
                     service.name,
-                    "--namespace",
-                    namespace,
-                    "--kubeconfig",
-                    self.config["karmada_kubeconfig"],
+                    "--namespace", namespace,
+                    "--kubeconfig", self.config["karmada_kubeconfig"],
                 ]
+                # fmt: on
                 result = run_helm(*args)
                 print(result)
 
