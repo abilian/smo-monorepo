@@ -1,9 +1,10 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session
 
+from smo_core.models import Graph
 from smo_core.services.cluster_service import ClusterService
-from smo_core.services.graph_service import GraphService
 from smo_ui.templating import templates
 
 router = APIRouter(route_class=DishkaRoute)
@@ -12,17 +13,27 @@ router = APIRouter(route_class=DishkaRoute)
 @router.get("/", response_class=HTMLResponse)
 async def index(
     request: Request,
-    graph_service: FromDishka[GraphService],
     cluster_service: FromDishka[ClusterService],
+    db_session: FromDishka[Session],
 ):
+    clusters = cluster_service.list_clusters()
+    ready_clusters = [c for c in clusters if c.availability]
+    not_ready_clusters = [c for c in clusters if not c.availability]
+
+    # TODO: use the graph service to fetch graphs
+    graphs = db_session.query(Graph).all()
+    active_graphs = [g for g in graphs if g.status == "Running"]
+
+    projects = {g.project for g in graphs}
+
     stats = {
-        "projects": 1,
-        "graphs": 1,
-        "active_graphs": 1,
-        "inactive_graphs": 0,
-        "clusters": 1,
-        "ready_clusters": 1,
-        "not_ready_clusters": 0,
+        "projects": len(projects),
+        "graphs": len(graphs),
+        "active_graphs": len(active_graphs),
+        "inactive_graphs": len(graphs) - len(active_graphs),
+        "clusters": len(clusters),
+        "ready_clusters": len(ready_clusters),
+        "not_ready_clusters": len(not_ready_clusters),
     }
 
     # The event log is static for now as there's no event service in smo-core
@@ -30,24 +41,4 @@ async def index(
         request,
         "index.html",
         {"stats": stats, "active_page": "dashboard"},
-    )
-
-
-@router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
-    """Dashboard route that matches the template reference"""
-    return templates.TemplateResponse(
-        request,
-        "dashboard.html",
-        {
-            "stats": {
-                "projects": 1,
-                "graphs": 1,
-                "active_graphs": 1,
-                "inactive_graphs": 0,
-                "clusters": 1,
-                "ready_clusters": 1,
-                "not_ready_clusters": 0,
-            },
-        },
     )

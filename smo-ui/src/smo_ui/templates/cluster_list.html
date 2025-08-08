@@ -40,17 +40,16 @@
           <th>GPU</th>
           <th>Available CPU</th>
           <th>Available RAM</th>
+          <th>Grafana</th>
         </tr>
       </thead>
       <tbody>
         {% for cluster in clusters %}
           <tr>
             <td>
-              {% if cluster.grafana %}
-                <a href="{{ cluster.grafana }}" target="_blank">{{ cluster.name }}</a>
-              {% else %}
+              <a href="{{ url_for('cluster_details', cluster_name=cluster.name) }}">
                 {{ cluster.name }}
-              {% endif %}
+              </a>
             </td>
             <td>
               {% if cluster.availability %}
@@ -63,6 +62,11 @@
             <td>{{ 'Yes' if cluster.acceleration else 'No' }}</td>
             <td>{{ "%.2f"|format(cluster.available_cpu) }} cores</td>
             <td>{{ cluster.available_ram }}</td>
+            <td>
+              {% if cluster.grafana %}
+                <a href="{{ cluster.grafana }}" target="_blank">View graph</a>
+              {% endif %}
+            </td>
           </tr>
         {% else %}
           <tr>

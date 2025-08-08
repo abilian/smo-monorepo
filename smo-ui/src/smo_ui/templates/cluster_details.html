@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Cluster Details - {{ cluster.name }}{% endblock %}
+
+{% block content %}
+  <header class="header">
+    <div class="header-title">
+      <a
+        href="{{ url_for('clusters') }}"
+        style="
+          color: #4a5568;
+          text-decoration: none;
+          font-weight: 500;
+          display: block;
+          margin-bottom: 10px;
+        "
+        >&larr; All Clusters</a
+      >
+      <h1>
+        {{ cluster.name }}
+        {% if cluster.availability %}
+          <span class="status-badge status-running">Ready</span>
+        {% else %}
+          <span class="status-badge status-degraded">Not Ready</span>
+        {% endif %}
+      </h1>
+    </div>
+    <div>
+      <button class="btn btn-secondary">Sync Cluster</button>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    <div class="main-column">
+      <div class="card">
+        <h2>Cluster Information</h2>
+        <dl class="info-grid">
+          <dt>Name</dt>
+          <dd>{{ cluster.name }}</dd>
+
+          <dt>Status</dt>
+          <dd>
+            {% if cluster.availability %}
+              Ready
+            {% else %}
+              Not Ready
+            {% endif %}
+          </dd>
+
+          <dt>Location</dt>
+          <dd>{{ cluster.location or 'N/A' }}</dd>
+
+          <dt>GPU Enabled</dt>
+          <dd>{{ 'Yes' if cluster.acceleration else 'No' }}</dd>
+
+          <dt>Available CPU</dt>
+          <dd>{{ "%.2f"|format(cluster.available_cpu) }} cores</dd>
+
+          <dt>Available RAM</dt>
+          <dd>{{ cluster.available_ram }}</dd>
+
+          <dt>Dashboard</dt>
+          <dd>
+            {% if cluster.grafana %}
+              <a href="{{ cluster.grafana }}" target="_blank">View in Grafana &rarr;</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="side-column">
+      <div class="card">
+        <h2>Actions</h2>
+        <button class="btn btn-secondary action-btn">Sync Cluster</button>
+        <button class="btn btn-danger-outline action-btn" style="margin-top: 10px;">
+          Remove from Federation
+        </button>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -5,11 +5,11 @@ import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi.testclient import TestClient
 
-from smo_core.models import Graph
+from smo_core.models import Cluster, Graph
 from smo_core.services.cluster_service import ClusterService
 from smo_core.services.graph_service import GraphService
 from smo_ui.app import create_app
-from smo_ui.providers import ConfigProvider
+from smo_ui.providers import ConfigProvider, DbProvider
 
 
 class MockClusterService:
@@ -35,8 +35,8 @@ class MockClusterService:
             },
         ]
 
-    def list_clusters(self) -> list:
-        return self.fetch_clusters()
+    def list_clusters(self) -> list[Cluster]:
+        return [Cluster(**d) for d in self.fetch_clusters()]
 
 
 class MockGraphService:
@@ -96,7 +96,14 @@ def client(
         def get_cluster_service(self) -> ClusterService:
             return MockClusterService()
 
-    container = make_async_container(TestProvider(), ConfigProvider())
+    providers = [
+        DbProvider(),
+        ConfigProvider(),
+        TestProvider(),
+        # InfraProvider(),
+        # ServiceProvider(),
+    ]
+    container = make_async_container(*providers)
 
     app = create_app(container=container)
 

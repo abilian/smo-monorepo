@@ -1,7 +1,9 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy.orm import Session
 
+from smo_core.models import Graph
 from smo_core.services.graph_service import GraphService
 from smo_core.utils import get_graph_from_artifact
 from smo_ui.templating import templates
@@ -10,30 +12,36 @@ router = APIRouter(prefix="/graphs", route_class=DishkaRoute)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def graphs_index(
-    request: Request,
-    graph_service: FromDishka[GraphService],
-):
-    # TODO: implement view
-    pass
-
-
-@router.get("/{project_name}", response_class=HTMLResponse)
-async def graphs(
-    request: Request,
-    project_name: str,
-    graph_service: FromDishka[GraphService],
-):
-    graphs_list = graph_service.get_graphs(project_name)
+async def graphs_index(request: Request, db_session: FromDishka[Session]):
+    """List graphs."""
+    graphs = db_session.query(Graph).all()
     return templates.TemplateResponse(
         request,
-        "graphs.html",
+        "graph_list.html",
         {
-            "project_name": project_name,
-            "graphs": graphs_list,
-            "active_page": "projects",
+            # "project_name": project_name,
+            "graphs": graphs,
+            "active_page": "graphs",
         },
     )
+
+
+# @router.get("/{project_name}", response_class=HTMLResponse)
+# async def graphs(
+#     request: Request,
+#     project_name: str,
+#     graph_service: FromDishka[GraphService],
+# ):
+#     graphs_list = graph_service.get_graphs(project_name)
+#     return templates.TemplateResponse(
+#         request,
+#         "graphs.html",
+#         {
+#             "project_name": project_name,
+#             "graphs": graphs_list,
+#             "active_page": "projects",
+#         },
+#     )
 
 
 @router.get("/deploy", response_class=HTMLResponse)
@@ -83,6 +91,9 @@ async def graph_details(
     graph_service: FromDishka[GraphService],
 ):
     graph = graph_service.get_graph(graph_id)
+    if not graph:
+        raise HTTPException(status_code=404, detail=f"Graph '{graph_id}' not found.")
+
     return templates.TemplateResponse(
         request,
         "graph_details.html",

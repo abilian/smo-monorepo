@@ -19,8 +19,19 @@ class ClusterService:
     config: dict
 
     def list_clusters(self) -> Sequence[Cluster]:
+        """
+        Retrieves all clusters from the database, ordered by name.
+        """
         stmt = select(Cluster).order_by(Cluster.name)
         return self.db_session.scalars(stmt).all()
+
+    def get_cluster(self, cluster_name: str) -> Cluster | None:
+        """
+        Retrieves a cluster by its name from the database.
+        Returns None if the cluster does not exist.
+        """
+        stmt = select(Cluster).where(Cluster.name == cluster_name)
+        return self.db_session.scalars(stmt).first()
 
     def fetch_clusters(self) -> Sequence[dict]:
         """
@@ -31,16 +42,19 @@ class ClusterService:
         karmada_cluster_info = self.karmada_helper.get_cluster_info()
 
         for cluster_name, info in karmada_cluster_info.items():
-            cluster = self.update_cluster(cluster_name, info)
+            cluster = self._update_cluster(cluster_name, info)
             cluster_dicts.append(cluster.to_dict())
 
         self.db_session.commit()
         return cluster_dicts
 
-    def update_cluster(self, cluster_name: str, info: dict) -> Cluster:
+    def _update_cluster(self, cluster_name: str, info: dict) -> Cluster:
+        """
+        Updates or creates a cluster in the database based on Karmada info, creating a Grafana dashboard if necessary.
+        """
         stmt = select(Cluster).where(Cluster.name == cluster_name)
         cluster = self.db_session.scalars(stmt).first()
-        if cluster is not None:
+        if cluster:
             cluster.available_cpu = info["remaining_cpu"]
             cluster.available_ram = info["remaining_memory_bytes"]
             cluster.availability = info["availability"]

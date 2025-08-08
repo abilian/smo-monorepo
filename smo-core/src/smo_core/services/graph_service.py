@@ -35,7 +35,7 @@ class GraphService:
     config: dict
 
     def get_graphs(self, project: str = "") -> list[dict]:
-        """Retrieves all the descriptors of a project"""
+        """Retrieves all the graph descriptors of a project"""
         graphs = self.db_session.query(Graph).filter_by(project=project).all()
         return [graph.to_dict() for graph in graphs]
 
