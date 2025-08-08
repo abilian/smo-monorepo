@@ -5,6 +5,7 @@ import tempfile
 from dataclasses import dataclass
 
 import yaml
+from glom import glom
 from sqlalchemy.orm.session import Session
 
 from smo_core.helpers import KarmadaHelper, PrometheusHelper
@@ -64,133 +65,178 @@ class GraphService:
         if self.get_graph(name) is not None:
             raise ValueError(f"Graph with name {name} already exists")
 
+        # 1: Create the main graph object in the database
+        graph = self._create_graph_db_entry(project, graph_descriptor)
+
+        # 2: Determine where each service should be placed
+        services_descriptor = graph_descriptor["services"]
+        placement_info = self._prepare_placement_info(graph, services_descriptor)
+
+        # 3&4: Create and deploy each individual service artifact
+        service_names = self._deploy_individual_services(
+            graph, services_descriptor, placement_info
+        )
+
+        # 5: Create a top-level Grafana dashboard for the entire graph
+        self._create_and_link_graph_dashboard(graph, service_names)
+
+        # 6: Commit the graph and services to the database
+        self.db_session.commit()
+
+    def _create_graph_db_entry(self, project: str, graph_descriptor: dict) -> Graph:
+        """Creates and saves the initial Graph entity to the database."""
         graph = Graph(
-            name=name,
+            name=graph_descriptor["id"],
             graph_descriptor=graph_descriptor,
             project=project,
             status="Running",
             grafana=None,
         )
         self.db_session.add(graph)
-        self.db_session.flush()
+        self.db_session.flush()  # Use flush to get graph.id for service relationships
+        return graph
 
-        services = graph_descriptor["services"]
+    def _prepare_placement_info(self, graph: Graph, services_descriptor: list) -> dict:
+        """Calculates and prepares placement and service import data."""
+        if graph.graph_descriptor.get("hdaGraphIntent", {}).get(
+            "useStaticPlacement", False
+        ):
+            return {"service_placement": {}, "import_clusters": {}}
+
+        cluster_data = self._get_cluster_data()
+
+        # Extract resource requirements from the service descriptors
         cpu_limits = [
-            translate_cpu(s["deployment"]["intent"]["compute"]["cpu"]) for s in services
+            translate_cpu(s["deployment"]["intent"]["compute"]["cpu"])
+            for s in services_descriptor
         ]
         acceleration_list = [
             1 if s["deployment"]["intent"]["compute"]["gpu"]["enabled"] == "True" else 0
-            for s in services
+            for s in services_descriptor
         ]
-        replicas = [1 for _ in services]
 
-        available_clusters = (
-            self.db_session.query(Cluster).filter_by(availability=True).all()
+        # Calculate the placement matrix
+        placement_matrix = calculate_naive_placement(
+            cluster_data["capacities"],
+            cluster_data["accelerations"],
+            cpu_limits,
+            acceleration_list,
+            replicas=[1] * len(services_descriptor),
         )
-        cluster_list = [c.name for c in available_clusters]
-        cluster_capacity_list = [c.available_cpu for c in available_clusters]
-        cluster_acceleration_list = [c.acceleration for c in available_clusters]
+        graph.placement = placement_matrix
 
-        service_placement = {}
-        if not graph_descriptor.get("hdaGraphIntent", {}).get(
-            "useStaticPlacement", False
-        ):
-            placement = calculate_naive_placement(
-                cluster_capacity_list,
-                cluster_acceleration_list,
-                cpu_limits,
-                acceleration_list,
-                replicas,
-            )
-            graph.placement = placement
-            service_placement = convert_placement(placement, services, cluster_list)
-            import_clusters = self._create_service_imports(services, service_placement)
+        service_placement = convert_placement(
+            placement_matrix, services_descriptor, cluster_data["names"]
+        )
+        import_clusters = self._create_service_imports(
+            services_descriptor, service_placement
+        )
 
-        svc_names = []
-        for service_data in services:
-            alert = {}
-            svc_name = service_data["id"]
-            svc_names.append(svc_name)
-            artifact = service_data["artifact"]
-            artifact_ref = artifact["ociImage"]
-            implementer = artifact["ociConfig"]["implementer"]
-            artifact_type = artifact["ociConfig"]["type"]
-            values_overwrite = artifact["valuesOverwrite"]
+        return {
+            "service_placement": service_placement,
+            "import_clusters": import_clusters,
+        }
 
-            conditional_deployment = "event" in service_data["deployment"]["trigger"]
-            if conditional_deployment:
-                event = service_data["deployment"]["trigger"]["event"]["events"][0]
-                alert = self._create_alert(
-                    event["id"],
-                    event["condition"]["promQuery"],
-                    event["condition"]["gracePeriod"],
-                    event["condition"]["description"],
-                    svc_name,
-                )
-                self.prom_helper.update_alert_rules(alert, "add")
-
-            cpu = translate_cpu(service_data["deployment"]["intent"]["compute"]["cpu"])
-            memory = translate_memory(
-                service_data["deployment"]["intent"]["compute"]["ram"]
-            )
-            storage = translate_storage(
-                service_data["deployment"]["intent"]["compute"]["storage"]
-            )
-            gpu = (
-                1
-                if service_data["deployment"]["intent"]["compute"]["gpu"]["enabled"]
-                == "True"
-                else 0
-            )
-
-            if not graph_descriptor.get("hdaGraphIntent", {}).get(
-                "useStaticPlacement", False
-            ):
-                placement_dict = values_overwrite
-                if implementer == "WOT":
-                    placement_dict = values_overwrite.setdefault("voChartOverwrite", {})
-
-                placement_dict["clustersAffinity"] = [service_placement[svc_name]]
-                placement_dict["serviceImportClusters"] = import_clusters[svc_name]
-
-            status = "Pending" if conditional_deployment else "Deployed"
-
-            svc_dashboard = self.grafana_helper.create_graph_service(svc_name)
-            response = self.grafana_helper.publish_dashboard(svc_dashboard)
-            grafana_url = f"{self.config['grafana']['host']}{response['url']}"
-
-            cluster_affinity = service_placement.get(svc_name)
-            service = Service(
-                name=svc_name,
-                values_overwrite=values_overwrite,
-                graph_id=graph.id,
-                status=status,
-                cluster_affinity=cluster_affinity,
-                artifact_ref=artifact_ref,
-                artifact_type=artifact_type,
-                artifact_implementer=implementer,
-                cpu=cpu,
-                memory=memory,
-                storage=storage,
-                gpu=gpu,
-                grafana=grafana_url,
-                alert=alert,
-            )
+    def _deploy_individual_services(
+        self, graph: Graph, services_descriptor: list, placement_info: dict
+    ) -> list[str]:
+        """Loops through services, creates their DB entries, and deploys them."""
+        deployed_service_names = []
+        for service_data in services_descriptor:
+            # Build the Service database object with all its properties
+            service = self._build_service_object(graph, service_data, placement_info)
             self.db_session.add(service)
 
-            if not conditional_deployment:
+            deployed_service_names.append(service.name)
+
+            # Deploy the service now if it's not conditional
+            if service.status == "Deployed":
                 self._helm_install_artifact(
-                    svc_name,
-                    artifact_ref,
-                    values_overwrite,
+                    service.name,
+                    service.artifact_ref,
+                    service.values_overwrite,
                     graph.project,
                     "install",
                 )
+        return deployed_service_names
 
-        dashboard = self.grafana_helper.create_graph_dashboard(graph.name, svc_names)
+    def _build_service_object(
+        self, graph: Graph, service_data: dict, placement_info: dict
+    ) -> Service:
+        """Builds a single Service object from its descriptor data, ready for DB insertion."""
+        svc_name = service_data["id"]
+        artifact = service_data["artifact"]
+        values_overwrite = artifact["valuesOverwrite"]
+        implementer = artifact["ociConfig"]["implementer"]
+
+        # Handle conditional deployment alerts
+        alert = {}
+        is_conditional = "event" in service_data["deployment"]["trigger"]
+        if is_conditional:
+            event = service_data["deployment"]["trigger"]["event"]["events"][0]
+            alert = self._create_alert(
+                event["id"],
+                event["condition"]["promQuery"],
+                event["condition"]["gracePeriod"],
+                event["condition"]["description"],
+                svc_name,
+            )
+            self.prom_helper.update_alert_rules(alert, "add")
+
+        # Update values with dynamic placement info if applicable
+        if placement_info["service_placement"]:
+            placement_dict = (
+                values_overwrite.setdefault("voChartOverwrite", {})
+                if implementer == "WOT"
+                else values_overwrite
+            )
+            placement_dict["clustersAffinity"] = [
+                placement_info["service_placement"][svc_name]
+            ]
+            placement_dict["serviceImportClusters"] = placement_info["import_clusters"][
+                svc_name
+            ]
+
+        # Create the service's Grafana dashboard
+        svc_dashboard = self.grafana_helper.create_graph_service(svc_name)
+        response = self.grafana_helper.publish_dashboard(svc_dashboard)
+        grafana_url = f"{self.config['grafana']['host']}{response['url']}"
+
+        if glom(service_data, "deployment.intent.compute.gpu.enabled", default=False):
+            gpu = 1
+        else:
+            gpu = 0
+
+        return Service(
+            name=svc_name,
+            values_overwrite=values_overwrite,
+            graph_id=graph.id,
+            status="Pending" if is_conditional else "Deployed",
+            cluster_affinity=placement_info.get("service_placement", {}).get(svc_name),
+            artifact_ref=artifact["ociImage"],
+            artifact_type=artifact["ociConfig"]["type"],
+            artifact_implementer=implementer,
+            cpu=translate_cpu(
+                glom(service_data, "deployment.intent.compute.cpu", default="small")
+            ),
+            memory=translate_memory(
+                glom(service_data, "deployment.intent.compute.ram", default="small")
+            ),
+            storage=translate_storage(
+                glom(service_data, "deployment.intent.compute.storage", default="small")
+            ),
+            gpu=gpu,
+            grafana=grafana_url,
+            alert=alert,
+        )
+
+    def _create_and_link_graph_dashboard(self, graph: Graph, service_names: list):
+        """Creates the main graph dashboard in Grafana and saves the URL."""
+        dashboard = self.grafana_helper.create_graph_dashboard(
+            graph.name, service_names
+        )
         response = self.grafana_helper.publish_dashboard(dashboard)
         graph.grafana = f"{self.config['grafana']['host']}{response['url']}"
-        self.db_session.commit()
 
     def trigger_placement(self, name: str):
         graph = self.get_graph(name)

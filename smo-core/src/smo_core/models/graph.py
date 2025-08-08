@@ -16,7 +16,7 @@ class Graph(Base):
     name: Mapped[str] = mapped_column(String(255), unique=True)
     status: Mapped[str] = mapped_column(String(255))
     project: Mapped[str] = mapped_column(String(255))
-    grafana: Mapped[str] = mapped_column(String(255), nullable=True)
+    grafana: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     graph_descriptor: Mapped[dict] = mapped_column(JsonType)
     placement: Mapped[dict] = mapped_column(JsonType, nullable=True)
