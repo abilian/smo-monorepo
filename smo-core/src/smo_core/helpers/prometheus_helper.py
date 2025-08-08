@@ -4,6 +4,8 @@ import requests
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
+# TODO: raise exception on errors / missing parameters, instead of just printing warnings.
+
 
 #
 #  PUBLIC FACADE CLASS (Interface remains unchanged for callers)
@@ -116,7 +118,7 @@ class _PrometheusRuleManager:
         self.reload_url = reload_url
         self.api_instance = self._initialize_k8s_client()
 
-    def _initialize_k8s_client(self):
+    def _initialize_k8s_client(self) -> client.CustomObjectsApi | None:
         """Loads Kubernetes config and returns a CustomObjectsApi client."""
         try:
             config.load_kube_config()
@@ -126,6 +128,8 @@ class _PrometheusRuleManager:
                 f"Warning: Could not load Kubernetes config: {e}. Rule management is disabled."
             )
             return None
+
+    # --- Public Methods ---
 
     def add_alert(
         self, alert: dict, rule_file_name: str, namespace: str, group_name: str
@@ -139,60 +143,111 @@ class _PrometheusRuleManager:
         """Removes an alert rule from a specified group."""
         self._update_rules(alert, "remove", rule_file_name, namespace, group_name)
 
+    # --- Orchestrator Method (The refactored _update_rules) ---
+
     def _update_rules(
         self, alert: dict, action: str, crd_name: str, namespace: str, group_name: str
     ):
-        """Core logic to fetch, modify, and update the PrometheusRule CRD."""
+        """Orchestrates fetching, modifying, and updating the PrometheusRule CRD."""
         if not self.api_instance:
             print("Cannot update alert rules: Kubernetes client not available.")
             return
 
+        # 1. Fetch the current Custom Resource from Kubernetes
+        crd = self._get_prometheus_rule(crd_name, namespace)
+        if not crd:
+            return  # Error is logged in the helper method
+
+        # 2. Modify the CRD dictionary in memory
+        crd_changed, success = self._modify_alert_group(crd, alert, action, group_name)
+        if not success:
+            print(
+                f"Error: Alert group '{group_name}' not found in PrometheusRule '{crd_name}'."
+            )
+            return
+
+        # If no actual change was made (e.g., removing a non-existent alert), skip the update.
+        if not crd_changed:
+            print(
+                f"No changes needed for alert '{alert.get('alert')}'. Skipping update."
+            )
+            return
+
+        # 3. Push the updated CRD back to the cluster
+        update_successful = self._replace_prometheus_rule(crd_name, namespace, crd)
+
+        # 4. Trigger a reload of Prometheus only if the update succeeded
+        if update_successful:
+            print("PrometheusRule updated successfully.")
+            self._trigger_prometheus_reload()
+
+    # --- Low-level Helper Methods ---
+
+    def _get_prometheus_rule(self, name: str, namespace: str) -> dict | None:
+        """Fetches the PrometheusRule Custom Resource from the cluster."""
         try:
-            crd = self.api_instance.get_namespaced_custom_object(
+            return self.api_instance.get_namespaced_custom_object(
                 group="monitoring.coreos.com",
                 version="v1",
                 namespace=namespace,
                 plural="prometheusrules",
-                name=crd_name,
+                name=name,
             )
+        except ApiException as e:
+            print(f"Exception when fetching PrometheusRule '{name}': {e}")
+            return None
 
-            # Find the target group and modify its rules
-            group_found = False
-            for group in crd.get("spec", {}).get("groups", []):
-                if group.get("name") == group_name:
-                    group_found = True
-                    rules = group.setdefault("rules", [])
-                    if action == "add":
-                        if not any(r.get("alert") == alert["alert"] for r in rules):
-                            rules.append(alert)
-                    elif action == "remove":
-                        group["rules"] = [
-                            r for r in rules if r.get("alert") != alert.get("alert")
-                        ]
-                    break
+    def _modify_alert_group(
+        self, crd: dict, alert: dict, action: str, group_name: str
+    ) -> tuple[bool, bool]:
+        """
+        Modifies the rules within a specific group in the CRD.
+        Returns (crd_was_changed, group_was_found).
+        """
 
-            if not group_found:
-                print(
-                    f"Error: Alert group '{group_name}' not found in PrometheusRule '{crd_name}'."
-                )
-                return
+        try:
+            groups = crd["spec"]["groups"]
+        except KeyError:
+            # This handles cases where `spec` or `groups` might be missing.
+            return False, False
 
-            # Push the updated CRD back to the cluster
+        for group in groups:
+            if group.get("name") == group_name:
+                break
+        else:
+            return False, False  # Group was not found
+
+        rules = group.setdefault("rules", [])
+        initial_rule_count = len(rules)
+
+        if action == "add":
+            # Add only if an alert with the same name doesn't already exist
+            if not any(r.get("alert") == alert.get("alert") for r in rules):
+                rules.append(alert)
+        elif action == "remove":
+            group["rules"] = [r for r in rules if r.get("alert") != alert.get("alert")]
+        else:
+            raise ValueError(f"Unknown action '{action}'")
+
+        # Return whether a change occurred and that the group was found
+        was_changed = len(group["rules"]) != initial_rule_count
+        return was_changed, True
+
+    def _replace_prometheus_rule(self, name: str, namespace: str, body: dict) -> bool:
+        """Pushes the updated PrometheusRule back to the Kubernetes cluster."""
+        try:
             self.api_instance.replace_namespaced_custom_object(
                 group="monitoring.coreos.com",
                 version="v1",
                 namespace=namespace,
                 plural="prometheusrules",
-                name=crd_name,
-                body=crd,
+                name=name,
+                body=body,
             )
-            print("PrometheusRule updated successfully.")
-            self._trigger_prometheus_reload()
-
+            return True
         except ApiException as e:
-            print(f"Exception when updating PrometheusRule: {e}")
-        except Exception as e:
-            print(f"An unexpected error occurred during rule update: {e}")
+            print(f"Exception when replacing PrometheusRule '{name}': {e}")
+            return False
 
     def _trigger_prometheus_reload(self):
         """Sends a POST request to the Prometheus reload endpoint."""
