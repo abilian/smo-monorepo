@@ -403,6 +403,12 @@ class GraphService:
             yaml.dump(values_overwrite, values_file)
             values_filename = values_file.name
 
+        # Temp
+        from pathlib import Path
+        with Path("/tmp/helm_values.yaml").open("w") as f:
+            yaml.dump(values_overwrite, f)
+
+
         # fmt: off
         args = [
             command,

@@ -55,3 +55,7 @@ push-code:
 	git push ci
 
 .PHONY: sync-code push-code
+
+## Allows working on a remote server
+live-sync:
+	watchfiles "rsync -e ssh -avz --exclude .git --exclude .venv --exclude .idea --delete ./ root@${SERVER_NAME}:/root/smo-monorepo/"

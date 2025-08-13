@@ -27,4 +27,11 @@ def run_helm(command: str, *args: str) -> str:
     print(f"Running command: {' '.join(cmd)}")
     # result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+
+    if result.returncode != 0:
+        print(f"Command failed: {' '.join(cmd)}")
+        print(f"Error: {result.stderr.strip()}")
+        msg = f"Command '{' '.join(cmd)}' failed with return code {result.returncode}"
+        raise subprocess.SubprocessError(msg)
+
     return result.stdout.strip()
