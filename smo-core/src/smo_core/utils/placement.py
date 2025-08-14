@@ -17,72 +17,6 @@ class PlacementError(ValueError):
     pass
 
 
-def swap_placement(service_dict: dict) -> dict:
-    """
-    Inverts a placement dictionary from service->cluster to cluster->[services].
-
-    This is a utility function to change the perspective of the placement data,
-    making it easy to see which services are running on a specific cluster.
-
-    Args:
-        service_dict (dict): A dictionary mapping a service identifier (key) to its
-            assigned cluster identifier (value).
-            Example: {'service1': 'cluster-a', 'service2': 'cluster-a'}
-
-    Returns:
-        dict: A dictionary mapping a cluster identifier (key) to a list of
-            service identifiers (value) assigned to it.
-            Example: {'cluster-a': ['service1', 'service2']}
-    """
-    cluster_dict = {}
-    for key, value in service_dict.items():
-        cluster_dict.setdefault(value, []).append(key)
-    return cluster_dict
-
-
-def convert_placement(
-    placement: list[list[int]], services: list[dict], clusters: list[str]
-) -> dict:
-    """
-    Converts a 2D placement matrix into a service-to-cluster dictionary.
-
-    This function translates the matrix representation used by optimization solvers
-    into a more human-readable dictionary format.
-
-    Args:
-        placement (list[list[int]]): A 2D matrix where `placement[i][j] == 1`
-            signifies that service `i` is placed on cluster `j`.
-        services (list[dict]): A list of service dictionaries, where each must have an 'id' key.
-        clusters (list[str]): A list of cluster names, corresponding to the columns
-            of the placement matrix.
-
-    Returns:
-        dict: A dictionary mapping each service ID to its assigned cluster name.
-            Example Input:
-                placement: [[1, 0], [0, 1]]
-                services: [{'id': 'service1'}, {'id': 'service2'}]
-                clusters: ['cluster-a', 'cluster-b']
-            Example Output:
-                {'service1': 'cluster-a', 'service2': 'cluster-b'}
-    """
-    service_placement = {}
-    for service_index, cluster_list in enumerate(placement):
-        # Find the column index where the value is 1, which indicates the assigned cluster.
-        # This assumes each service is placed on exactly one cluster.
-        try:
-            cluster_index = cluster_list.index(1)
-            service_name = services[service_index]["id"]
-            service_placement[service_name] = clusters[cluster_index]
-        except ValueError:
-            # This case occurs if a service (row) has no '1', meaning it wasn't placed.
-            service_name = services[service_index]["id"]
-            print(
-                f"Warning: Service '{service_name}' was not placed on any cluster in the provided matrix."
-            )
-
-    return service_placement
-
-
 def decide_placement(
     cluster_capacities: list[float],
     cluster_acceleration: list[bool],
@@ -284,3 +218,72 @@ def _place_service(
     # If the loop completes without finding a spot, placement is impossible.
     msg = f"Service {service_id} with requirement {service_req} could not be placed in any cluster."
     raise PlacementError(msg)
+
+
+#
+# == Utils
+#
+def swap_placement(service_dict: dict) -> dict:
+    """
+    Inverts a placement dictionary from service->cluster to cluster->[services].
+
+    This is a utility function to change the perspective of the placement data,
+    making it easy to see which services are running on a specific cluster.
+
+    Args:
+        service_dict (dict): A dictionary mapping a service identifier (key) to its
+            assigned cluster identifier (value).
+            Example: {'service1': 'cluster-a', 'service2': 'cluster-a'}
+
+    Returns:
+        dict: A dictionary mapping a cluster identifier (key) to a list of
+            service identifiers (value) assigned to it.
+            Example: {'cluster-a': ['service1', 'service2']}
+    """
+    cluster_dict = {}
+    for key, value in service_dict.items():
+        cluster_dict.setdefault(value, []).append(key)
+    return cluster_dict
+
+
+def convert_placement(
+    placement: list[list[int]], services: list[dict], clusters: list[str]
+) -> dict:
+    """
+    Converts a 2D placement matrix into a service-to-cluster dictionary.
+
+    This function translates the matrix representation used by optimization solvers
+    into a more human-readable dictionary format.
+
+    Args:
+        placement (list[list[int]]): A 2D matrix where `placement[i][j] == 1`
+            signifies that service `i` is placed on cluster `j`.
+        services (list[dict]): A list of service dictionaries, where each must have an 'id' key.
+        clusters (list[str]): A list of cluster names, corresponding to the columns
+            of the placement matrix.
+
+    Returns:
+        dict: A dictionary mapping each service ID to its assigned cluster name.
+            Example Input:
+                placement: [[1, 0], [0, 1]]
+                services: [{'id': 'service1'}, {'id': 'service2'}]
+                clusters: ['cluster-a', 'cluster-b']
+            Example Output:
+                {'service1': 'cluster-a', 'service2': 'cluster-b'}
+    """
+    service_placement = {}
+    for service_index, cluster_list in enumerate(placement):
+        # Find the column index where the value is 1, which indicates the assigned cluster.
+        # This assumes each service is placed on exactly one cluster.
+        try:
+            cluster_index = cluster_list.index(1)
+            service_name = services[service_index]["id"]
+            service_placement[service_name] = clusters[cluster_index]
+        except ValueError:
+            # This case occurs if a service (row) has no '1', meaning it wasn't placed.
+            service_name = services[service_index]["id"]
+            print(
+                f"Warning: Service '{service_name}' was not placed on any cluster in the provided matrix."
+            )
+
+    return service_placement

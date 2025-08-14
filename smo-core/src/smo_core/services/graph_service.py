@@ -12,16 +12,12 @@ from sqlalchemy.orm.session import Session
 from smo_core.helpers import KarmadaHelper, PrometheusHelper
 from smo_core.helpers.grafana.grafana_helper import GrafanaHelper
 from smo_core.models import Cluster, Graph, Service
+from smo_core.services.placement_service import PlacementService, NaivePlacementService, ReoptimizationPlacementService, convert_placement
 from smo_core.utils import run_helm
 from smo_core.utils.intent_translation import (
     translate_cpu,
     translate_memory,
     translate_storage,
-)
-from smo_core.utils.placement import (
-    calculate_naive_placement,
-    convert_placement,
-    decide_placement,
 )
 
 
@@ -34,6 +30,10 @@ class GraphService:
     grafana_helper: GrafanaHelper
     prom_helper: PrometheusHelper
     config: dict
+
+    # TODO: use dishka to inject these services instead
+    placement_service: PlacementService = NaivePlacementService()
+    reoptimization_service: PlacementService = ReoptimizationPlacementService()
 
     def get_graphs(self, project: str = "") -> list[Graph]:
         """Retrieves all the graph descriptors of a project"""
@@ -119,14 +119,23 @@ class GraphService:
             for s in services_descriptor
         ]
 
-        # Calculate the placement matrix
-        placement_matrix = calculate_naive_placement(
+        # Calculate the placement matrix using the service
+        placement_matrix = self.placement_service.calculate(
             cluster_data["capacities"],
             cluster_data["accelerations"],
             cpu_limits,
             acceleration_list,
             replicas=[1] * len(services_descriptor),
         )
+
+        # OLD code:
+        # placement_matrix = calculate_naive_placement(
+        #     cluster_data["capacities"],
+        #     cluster_data["accelerations"],
+        #     cpu_limits,
+        #     acceleration_list,
+        #     replicas=[1] * len(services_descriptor),
+        # )
         graph.placement = placement_matrix
 
         service_placement = convert_placement(
@@ -282,14 +291,23 @@ class GraphService:
         """Calculates a new placement solution for the graph."""
         services = graph.services
         service_names = [s.name for s in services]
-        return decide_placement(
-            cluster_data["capacities"],
-            cluster_data["accelerations"],
-            [s.cpu for s in services],
-            [s.gpu for s in services],
-            [current_replicas[name] for name in service_names],
-            graph.placement or [],
+        return self.reoptimization_service.calculate(
+            cluster_capacities=cluster_data["capacities"],
+            cluster_accelerations=cluster_data["accelerations"],
+            cpu_limits=[s.cpu for s in services],
+            accelerations=[bool(s.gpu) for s in services],
+            replicas=[current_replicas[name] for name in service_names],
+            current_placement=graph.placement or [],
         )
+        # OLD:
+        # return decide_placement(
+        #     cluster_data["capacities"],
+        #     cluster_data["accelerations"],
+        #     [s.cpu for s in services],
+        #     [s.gpu for s in services],
+        #     [current_replicas[name] for name in service_names],
+        #     graph.placement or [],
+        # )
 
     def _apply_placement_changes(
         self, graph: Graph, new_placement_matrix, cluster_data
