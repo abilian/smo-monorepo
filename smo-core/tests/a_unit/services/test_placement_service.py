@@ -1,8 +1,8 @@
 import pytest
 
 from smo_core.services.placement_service import (
-    PlacementError,
     NaivePlacementService,
+    PlacementError,
     ReoptimizationPlacementService,
     convert_placement,
     swap_placement,
@@ -102,8 +102,8 @@ class TestReoptimizationPlacementService:
             cluster_accelerations=[1, 1],
             cpu_limits=[2, 2],
             accelerations=[0, 1],
-            replicas=[1, 2], # Svc1: 2 CPU, Svc2: 4 CPU
-            current_placement=[[1, 0], [1, 0]], # Both on cluster 1 (total 6 > 4)
+            replicas=[1, 2],  # Svc1: 2 CPU, Svc2: 4 CPU
+            current_placement=[[1, 0], [1, 0]],  # Both on cluster 1 (total 6 > 4)
         )
         # Expected: The model must move one service. The only valid placement is
         # Svc2 (4 CPU) on one cluster, and Svc1 (2 CPU) on the other.
@@ -115,11 +115,11 @@ class TestReoptimizationPlacementService:
         reoptimizer = ReoptimizationPlacementService()
         result = reoptimizer.calculate(
             cluster_capacities=[5, 5],
-            cluster_accelerations=[1, 0], # Only cluster 1 has GPU
+            cluster_accelerations=[1, 0],  # Only cluster 1 has GPU
             cpu_limits=[2, 3],
-            accelerations=[1, 0], # Svc1 needs GPU
+            accelerations=[1, 0],  # Svc1 needs GPU
             replicas=[1, 1],
-            current_placement=[[0, 1], [1, 0]], # Broken: Svc1 is on non-GPU cluster 2
+            current_placement=[[0, 1], [1, 0]],  # Broken: Svc1 is on non-GPU cluster 2
         )
         # Expected: Svc1 MUST move to cluster 1.
         # Svc2 is on cluster 1. Total load: 2+3=5. This fits.
@@ -136,7 +136,7 @@ class TestReoptimizationPlacementService:
                 cpu_limits=[2, 3],
                 accelerations=[1, 0],
                 replicas=[1, 1],
-                current_placement=None, # Explicitly pass None
+                current_placement=None,  # Explicitly pass None
             )
 
     def test_decide_placement_unsolvable(self):
@@ -144,7 +144,7 @@ class TestReoptimizationPlacementService:
         reoptimizer = ReoptimizationPlacementService()
         with pytest.raises(PlacementError):
             reoptimizer.calculate(
-                cluster_capacities=[1, 1], # Not enough capacity
+                cluster_capacities=[1, 1],  # Not enough capacity
                 cluster_accelerations=[1, 1],
                 cpu_limits=[2, 2],
                 accelerations=[0, 0],

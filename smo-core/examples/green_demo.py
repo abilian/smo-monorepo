@@ -15,9 +15,9 @@ placement algorithms to objectively compare their effectiveness:
 """
 
 from smo_core.services.placement_service import (
-    NaivePlacementService,
-    GreenConsolidationPlacementService,
     CarbonAwareOptimizationService,
+    GreenConsolidationPlacementService,
+    NaivePlacementService,
 )
 
 

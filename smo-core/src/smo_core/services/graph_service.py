@@ -12,7 +12,12 @@ from sqlalchemy.orm.session import Session
 from smo_core.helpers import KarmadaHelper, PrometheusHelper
 from smo_core.helpers.grafana.grafana_helper import GrafanaHelper
 from smo_core.models import Cluster, Graph, Service
-from smo_core.services.placement_service import PlacementService, NaivePlacementService, ReoptimizationPlacementService, convert_placement
+from smo_core.services.placement_service import (
+    NaivePlacementService,
+    PlacementService,
+    ReoptimizationPlacementService,
+    convert_placement,
+)
 from smo_core.utils import run_helm
 from smo_core.utils.intent_translation import (
     translate_cpu,
@@ -423,9 +428,9 @@ class GraphService:
 
         # Temp
         from pathlib import Path
+
         with Path("/tmp/helm_values.yaml").open("w") as f:
             yaml.dump(values_overwrite, f)
-
 
         # fmt: off
         args = [

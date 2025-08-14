@@ -14,19 +14,22 @@ Key Components:
   convex optimization to re-balance an existing placement.
 """
 
-from typing import Protocol, List, Dict
+from typing import Dict, List, Protocol
+
 import cvxpy as cp
 import numpy as np
 
 
 class PlacementError(ValueError):
     """Custom exception raised when a service placement cannot be successfully calculated."""
+
     pass
 
 
 # ==============================================================================
 # == Placement Service Protocol and Implementations
 # ==============================================================================
+
 
 class PlacementService(Protocol):
     """
@@ -83,7 +86,7 @@ class NaivePlacementService:
         cpu_limits: List[float],
         accelerations: List[bool],
         replicas: List[int],
-        current_placement: List[List[int]] | None = None, # Not used by this strategy
+        current_placement: List[List[int]] | None = None,  # Not used by this strategy
     ) -> List[List[int]]:
         num_clusters = len(cluster_capacities)
         num_services = len(cpu_limits)
@@ -91,35 +94,57 @@ class NaivePlacementService:
 
         # Pre-flight checks
         if max(service_reqs) > max(cluster_capacities):
-            raise PlacementError("A single service requires more CPU than the largest cluster.")
+            raise PlacementError(
+                "A single service requires more CPU than the largest cluster."
+            )
         if sum(service_reqs) > sum(cluster_capacities):
-            raise PlacementError("Insufficient total cluster capacity for all services.")
+            raise PlacementError(
+                "Insufficient total cluster capacity for all services."
+            )
 
         placement = [[0] * num_clusters for _ in range(num_services)]
         cluster_usage = [0.0] * num_clusters
 
         for service_id, service_req in enumerate(service_reqs):
             self._place_service(
-                placement, service_id, service_req, accelerations,
-                cluster_capacities, cluster_accelerations, cluster_usage
+                placement,
+                service_id,
+                service_req,
+                accelerations,
+                cluster_capacities,
+                cluster_accelerations,
+                cluster_usage,
             )
         return placement
 
     def _place_service(
-        self, placement, service_id, service_req, accelerations,
-        cluster_capacities, cluster_accelerations, cluster_usage
+        self,
+        placement,
+        service_id,
+        service_req,
+        accelerations,
+        cluster_capacities,
+        cluster_accelerations,
+        cluster_usage,
     ):
         """Private helper to place a single service using a first-fit strategy."""
         for cluster_id in range(len(cluster_capacities)):
-            acceleration_ok = (not accelerations[service_id] or cluster_accelerations[cluster_id])
-            capacity_ok = (cluster_usage[cluster_id] + service_req <= cluster_capacities[cluster_id])
+            acceleration_ok = (
+                not accelerations[service_id] or cluster_accelerations[cluster_id]
+            )
+            capacity_ok = (
+                cluster_usage[cluster_id] + service_req
+                <= cluster_capacities[cluster_id]
+            )
 
             if acceleration_ok and capacity_ok:
                 placement[service_id][cluster_id] = 1
                 cluster_usage[cluster_id] += service_req
                 return
 
-        msg = f"Service {service_id} with requirement {service_req} could not be placed."
+        msg = (
+            f"Service {service_id} with requirement {service_req} could not be placed."
+        )
         raise PlacementError(msg)
 
 
@@ -152,7 +177,9 @@ class ReoptimizationPlacementService:
         # Objective: Minimize deployment cost and the cost of moving services.
         w_dep = 1.0
         w_re = 1.0
-        objective = cp.Minimize(w_dep * cp.sum(x) + w_re * cp.sum(cp.multiply(y, (y - x))))
+        objective = cp.Minimize(
+            w_dep * cp.sum(x) + w_re * cp.sum(cp.multiply(y, (y - x)))
+        )
 
         constraints = []
         # Constraint 1: Each service must be placed in exactly one cluster.
@@ -162,12 +189,16 @@ class ReoptimizationPlacementService:
         # Constraint 2: Cluster capacity must not be exceeded.
         for e in range(num_clusters):
             service_demands = [cpu_limits[s] * replicas[s] for s in range(num_services)]
-            constraints.append(cp.sum(cp.multiply(x[:, e], service_demands)) <= cluster_capacities[e])
+            constraints.append(
+                cp.sum(cp.multiply(x[:, e], service_demands)) <= cluster_capacities[e]
+            )
 
         # Constraint 3: Acceleration requirements must be met.
         for s in range(num_services):
             for e in range(num_clusters):
-                constraints.append(x[s, e] * accelerations[s] <= cluster_accelerations[e])
+                constraints.append(
+                    x[s, e] * accelerations[s] <= cluster_accelerations[e]
+                )
 
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.HIGHS)
@@ -175,7 +206,9 @@ class ReoptimizationPlacementService:
         if problem.status not in [cp.OPTIMAL, cp.OPTIMAL_INACCURATE]:
             # In a real system, you might want to fall back to the current_placement
             # or handle this more gracefully.
-            raise PlacementError(f"Optimal placement not found. Problem status: {problem.status}")
+            raise PlacementError(
+                f"Optimal placement not found. Problem status: {problem.status}"
+            )
 
         return [
             [int(round(x.value[s, e])) for e in range(num_clusters)]
@@ -186,6 +219,7 @@ class ReoptimizationPlacementService:
 # ==============================================================================
 # == Standalone Utility Functions
 # ==============================================================================
+
 
 def swap_placement(service_dict: Dict[str, str]) -> Dict[str, List[str]]:
     """
@@ -242,29 +276,34 @@ class GreenConsolidationPlacementService:
     """
 
     def calculate(
-            self,
-            cluster_capacities: List[float],
-            cluster_accelerations: List[bool],
-            # NEW: This service requires carbon cost data for each cluster.
-            cluster_carbon_costs: List[float],
-            cpu_limits: List[float],
-            accelerations: List[bool],
-            replicas: List[int],
-            current_placement: List[List[int]] | None = None,  # Not used
+        self,
+        cluster_capacities: List[float],
+        cluster_accelerations: List[bool],
+        # NEW: This service requires carbon cost data for each cluster.
+        cluster_carbon_costs: List[float],
+        cpu_limits: List[float],
+        accelerations: List[bool],
+        replicas: List[int],
+        current_placement: List[List[int]] | None = None,  # Not used
     ) -> List[List[int]]:
-
         num_clusters = len(cluster_capacities)
         num_services = len(cpu_limits)
         service_reqs = [rep * cpu for rep, cpu in zip(replicas, cpu_limits)]
 
         if len(cluster_carbon_costs) != num_clusters:
-            raise ValueError("Length of 'cluster_carbon_costs' must match the number of clusters.")
+            raise ValueError(
+                "Length of 'cluster_carbon_costs' must match the number of clusters."
+            )
 
         # Pre-flight checks
         if max(service_reqs) > max(cluster_capacities):
-            raise PlacementError("A single service requires more CPU than the largest cluster.")
+            raise PlacementError(
+                "A single service requires more CPU than the largest cluster."
+            )
         if sum(service_reqs) > sum(cluster_capacities):
-            raise PlacementError("Insufficient total cluster capacity for all services.")
+            raise PlacementError(
+                "Insufficient total cluster capacity for all services."
+            )
 
         placement = [[0] * num_clusters for _ in range(num_services)]
         cluster_usage = [0.0] * num_clusters
@@ -272,8 +311,13 @@ class GreenConsolidationPlacementService:
         # Place each service one by one
         for service_id, service_req in enumerate(service_reqs):
             best_cluster_id = self._find_best_cluster(
-                service_id, service_req, accelerations,
-                cluster_capacities, cluster_accelerations, cluster_carbon_costs, cluster_usage
+                service_id,
+                service_req,
+                accelerations,
+                cluster_capacities,
+                cluster_accelerations,
+                cluster_carbon_costs,
+                cluster_usage,
             )
 
             if best_cluster_id is None:
@@ -284,13 +328,20 @@ class GreenConsolidationPlacementService:
             placement[service_id][best_cluster_id] = 1
             cluster_usage[best_cluster_id] += service_req
             print(
-                f"  -> Decision: Placing Service {service_id} (CPU: {service_req}) on Cluster {best_cluster_id} (Carbon Cost: {cluster_carbon_costs[best_cluster_id]})")
+                f"  -> Decision: Placing Service {service_id} (CPU: {service_req}) on Cluster {best_cluster_id} (Carbon Cost: {cluster_carbon_costs[best_cluster_id]})"
+            )
 
         return placement
 
     def _find_best_cluster(
-            self, service_id, service_req, accelerations,
-            cluster_capacities, cluster_accelerations, cluster_carbon_costs, cluster_usage
+        self,
+        service_id,
+        service_req,
+        accelerations,
+        cluster_capacities,
+        cluster_accelerations,
+        cluster_carbon_costs,
+        cluster_usage,
     ):
         """
         Finds the best-fit cluster for a single service based on carbon cost.
@@ -299,16 +350,23 @@ class GreenConsolidationPlacementService:
         candidate_clusters = []
         for cluster_id in range(len(cluster_capacities)):
             # Check 1: Does the cluster meet acceleration requirements?
-            acceleration_ok = (not accelerations[service_id] or cluster_accelerations[cluster_id])
+            acceleration_ok = (
+                not accelerations[service_id] or cluster_accelerations[cluster_id]
+            )
             # Check 2: Does the cluster have enough remaining capacity?
-            capacity_ok = (cluster_usage[cluster_id] + service_req <= cluster_capacities[cluster_id])
+            capacity_ok = (
+                cluster_usage[cluster_id] + service_req
+                <= cluster_capacities[cluster_id]
+            )
 
             if acceleration_ok and capacity_ok:
-                candidate_clusters.append({
-                    "id": cluster_id,
-                    "cost": cluster_carbon_costs[cluster_id],
-                    "usage": cluster_usage[cluster_id],
-                })
+                candidate_clusters.append(
+                    {
+                        "id": cluster_id,
+                        "cost": cluster_carbon_costs[cluster_id],
+                        "usage": cluster_usage[cluster_id],
+                    }
+                )
 
         if not candidate_clusters:
             return None
@@ -333,20 +391,22 @@ class CarbonAwareOptimizationService:
     """
 
     def calculate(
-            self,
-            cluster_capacities: List[float],
-            cluster_accelerations: List[bool],
-            # NEW: This service requires carbon cost data for each cluster.
-            cluster_carbon_costs: List[float],
-            cpu_limits: List[float],
-            accelerations: List[bool],
-            replicas: List[int],
-            current_placement: List[List[int]] | None = None,
+        self,
+        cluster_capacities: List[float],
+        cluster_accelerations: List[bool],
+        # NEW: This service requires carbon cost data for each cluster.
+        cluster_carbon_costs: List[float],
+        cpu_limits: List[float],
+        accelerations: List[bool],
+        replicas: List[int],
+        current_placement: List[List[int]] | None = None,
     ) -> List[List[int]]:
         if current_placement is None:
             raise ValueError("Re-optimization requires a 'current_placement' matrix.")
         if len(cluster_carbon_costs) != len(cluster_capacities):
-            raise ValueError("Length of 'cluster_carbon_costs' must match the number of clusters.")
+            raise ValueError(
+                "Length of 'cluster_carbon_costs' must match the number of clusters."
+            )
 
         num_clusters = len(cluster_capacities)
         num_services = len(cpu_limits)
@@ -366,7 +426,9 @@ class CarbonAwareOptimizationService:
 
         # 2. Carbon Footprint Cost: The sum of (CPU usage * carbon cost) for each cluster.
         w_carbon = 5.0  # Weight for carbon cost - we prioritize this heavily.
-        service_demands = np.array([cpu * rep for cpu, rep in zip(cpu_limits, replicas)])
+        service_demands = np.array(
+            [cpu * rep for cpu, rep in zip(cpu_limits, replicas)]
+        )
 
         carbon_cost_terms = []
         for e in range(num_clusters):
@@ -387,18 +449,24 @@ class CarbonAwareOptimizationService:
 
         # Cluster capacity must not be exceeded.
         for e in range(num_clusters):
-            constraints.append(cp.sum(cp.multiply(x[:, e], service_demands)) <= cluster_capacities[e])
+            constraints.append(
+                cp.sum(cp.multiply(x[:, e], service_demands)) <= cluster_capacities[e]
+            )
 
         # Acceleration requirements must be met.
         for s in range(num_services):
             for e in range(num_clusters):
-                constraints.append(x[s, e] * accelerations[s] <= cluster_accelerations[e])
+                constraints.append(
+                    x[s, e] * accelerations[s] <= cluster_accelerations[e]
+                )
 
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.HIGHS)
 
         if problem.status not in [cp.OPTIMAL, cp.OPTIMAL_INACCURATE]:
-            raise PlacementError(f"Optimal placement not found. Problem status: {problem.status}")
+            raise PlacementError(
+                f"Optimal placement not found. Problem status: {problem.status}"
+            )
 
         # Round the boolean solution to clean 0/1 integers
         return [

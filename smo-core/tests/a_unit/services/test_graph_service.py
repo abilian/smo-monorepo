@@ -134,8 +134,7 @@ def test_deploy_graph_new_graph(
         },
     )
     mocker.patch(
-        "smo_core.services.graph_service.run_helm",
-        return_value="Mock helm output"
+        "smo_core.services.graph_service.run_helm", return_value="Mock helm output"
     )
 
     # Test
@@ -183,9 +182,8 @@ def test_start_graph(mock_db_session, mock_karmada_helper, mock_prom_helper, moc
     mock_db_session.query.return_value.filter_by.return_value.first.return_value = graph
 
     mocker.patch(
-        "smo_core.services.graph_service.run_helm",
-        return_value="Mock helm output"
-   )
+        "smo_core.services.graph_service.run_helm", return_value="Mock helm output"
+    )
 
     # Create service
     service = GraphService(
@@ -217,9 +215,8 @@ def test_stop_graph(mock_db_session, mock_karmada_helper, mock_prom_helper, mock
     mock_db_session.query.return_value.filter_by.return_value.first.return_value = graph
 
     mocker.patch(
-        "smo_core.services.graph_service.run_helm",
-        return_value="Mock helm output"
-    )                        
+        "smo_core.services.graph_service.run_helm", return_value="Mock helm output"
+    )
 
     # Create service
     service = GraphService(
@@ -286,8 +283,7 @@ def test_helm_install_artifact(mock_db_session, mock_karmada_helper, mocker):
         mock_run_helm.return_value = ""  # Mock return value
 
         mocker.patch(
-            "smo_core.services.graph_service.run_helm",
-            return_value="Mock helm output"
+            "smo_core.services.graph_service.run_helm", return_value="Mock helm output"
         )
 
         # Test
