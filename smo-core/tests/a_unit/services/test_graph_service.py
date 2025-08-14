@@ -102,6 +102,7 @@ def test_fetch_graph(mock_db_session):
 
 
 def test_deploy_graph_new_graph(
+    mocker,
     mock_db_session,
     mock_karmada_helper,
     mock_grafana_helper,
@@ -132,6 +133,10 @@ def test_deploy_graph_new_graph(
             "helm": {"insecure_registry": False},
         },
     )
+    mocker.patch(
+        "smo_core.services.graph_service.run_helm",
+        return_value="Mock helm output"
+    )
 
     # Test
     service.deploy_graph("test-project", sample_graph_descriptor)
@@ -142,7 +147,7 @@ def test_deploy_graph_new_graph(
     mock_grafana_helper.publish_dashboard.assert_called()
 
 
-def test_start_graph(mock_db_session, mock_karmada_helper, mock_prom_helper):
+def test_start_graph(mock_db_session, mock_karmada_helper, mock_prom_helper, mocker):
     # Setup test graph with stopped service
     graph = Graph(name="test-graph", status="Stopped")
     service = Service(
@@ -177,6 +182,11 @@ def test_start_graph(mock_db_session, mock_karmada_helper, mock_prom_helper):
     graph.services = [service]
     mock_db_session.query.return_value.filter_by.return_value.first.return_value = graph
 
+    mocker.patch(
+        "smo_core.services.graph_service.run_helm",
+        return_value="Mock helm output"
+   )
+
     # Create service
     service = GraphService(
         db_session=mock_db_session,
@@ -199,12 +209,17 @@ def test_start_graph(mock_db_session, mock_karmada_helper, mock_prom_helper):
     mock_db_session.commit.assert_called()
 
 
-def test_stop_graph(mock_db_session, mock_karmada_helper, mock_prom_helper):
+def test_stop_graph(mock_db_session, mock_karmada_helper, mock_prom_helper, mocker):
     # Setup test graph with running service
     graph = Graph(name="test-graph", status="Running", project="test-project")
     service = Service(name="test-service", status="Deployed")
     graph.services = [service]
     mock_db_session.query.return_value.filter_by.return_value.first.return_value = graph
+
+    mocker.patch(
+        "smo_core.services.graph_service.run_helm",
+        return_value="Mock helm output"
+    )                        
 
     # Create service
     service = GraphService(
@@ -249,7 +264,7 @@ def test_remove_graph(mock_db_session, mock_karmada_helper, mock_prom_helper):
     mock_db_session.commit.assert_called()
 
 
-def test_helm_install_artifact(mock_db_session, mock_karmada_helper):
+def test_helm_install_artifact(mock_db_session, mock_karmada_helper, mocker):
     """Test the helm install artifact method."""
     service = GraphService(
         db_session=mock_db_session,
@@ -269,6 +284,11 @@ def test_helm_install_artifact(mock_db_session, mock_karmada_helper):
     ):
         mock_tempfile.return_value.__enter__.return_value.name = "/tmp/values.yaml"
         mock_run_helm.return_value = ""  # Mock return value
+
+        mocker.patch(
+            "smo_core.services.graph_service.run_helm",
+            return_value="Mock helm output"
+        )
 
         # Test
         service._helm_install_artifact(
